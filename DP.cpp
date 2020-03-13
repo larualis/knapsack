@@ -4,18 +4,6 @@
 
 #include "DP.h"
 
-DP::DP(const std::vector<std::vector<float>>& Elements, float capacity, int numberOfFunctions):
-elements_(Elements),
-capacity_(capacity),
-numberOfFunctions_(numberOfFunctions)
-{
-  solutions_.emplace_back(std::vector<float> (numberOfFunctions + 1, 0));
-  for (int i = 1; i <= numberOfFunctions_; ++i)
-  {
-    functionSubset_.push_back(i);
-  }
-}
-
 DP::DP(const std::vector<std::vector<float>>& Elements, float capacity, int numberOfFunctions, std::vector<int> functionSubset):
     elements_(Elements),
     capacity_(capacity),
@@ -24,6 +12,20 @@ DP::DP(const std::vector<std::vector<float>>& Elements, float capacity, int numb
 {
   solutions_.emplace_back(std::vector<float> (numberOfFunctions + 1, 0));
 }
+
+DP::DP(const problem& Problem):
+    elements_(Problem.getElements()),
+    capacity_(Problem.getCapacity()),
+    numberOfFunctions_(Problem.getNumberOfFunctions())
+    {
+      for (auto x: Problem.getRestrictedFunctions())
+        {
+          functionSubset_.push_back(x.first);
+        }
+  
+      solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
+  
+    }
 
 void DP::run()
 {

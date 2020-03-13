@@ -7,6 +7,7 @@
 
 
 #include <vector>
+#include "problem.h"
 
 class DP
 {
@@ -24,7 +25,7 @@ public:
   const std::vector<std::vector<float>> &getSolutions() const;
 
 public:
-  DP(const std::vector<std::vector<float>>& elements, float capacity ,int numberOfFunctions);
+  DP(const problem& Problem);
   
   DP(const std::vector<std::vector<float>> &Elements, float capacity, int numberOfFunctions, std::vector<int> functionSubset);
   

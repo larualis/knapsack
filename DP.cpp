@@ -82,7 +82,7 @@ void DP::run()
 
 bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool lastElement)
 {
-  if(sol1[0] > sol2[0] and !lastElement)//todo: not relevant at last element
+  if(sol1[0] > sol2[0] and !lastElement)
   {
     return false;
   }

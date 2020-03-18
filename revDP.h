@@ -6,6 +6,16 @@
 #define KNAPSACK_REVDP_H
 
 #import <vector>
+#import <list>
+#include "problem.h"
+
+enum class interval : int
+{
+  disjunct,
+  left,
+  right,
+  equal
+};
 
 class revDP
 {
@@ -19,25 +29,20 @@ private:
   
   std::vector<int> functionSubset_;
   
-  std::vector<float> baseValues_;
+  std::vector<std::list<std::vector<float> *>> pruningValues_;
   
-  
+  std::list<std::vector<float>> rawPruningValues_;
   
 public:
-  const std::vector<std::vector<float>> &getSolutions() const;
-
-public:
-  revDP(const std::vector<std::vector<float>>& elements, float capacity ,int numberOfFunctions);
-  
-  revDP(const std::vector<std::vector<float>> &Elements, float capacity, int numberOfFunctions, std::vector<int> functionSubset);
+  revDP(const problem& Problem, std::vector<float> baseValues);
   
   void run();
 
 private:
   
-  bool dominates(std::vector<float>& sol1, std::vector<float>& sol2, bool lastElement);
+  bool dominates(std::vector<float>& sol1, std::vector<float>& sol2);
   
-  
+  interval compareInterval(std::vector<float> &sol1, std::vector<float> &sol2);
 };
 
 

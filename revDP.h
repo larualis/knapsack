@@ -29,9 +29,7 @@ private:
   
   std::vector<int> functionSubset_;
   
-  std::vector<std::list<std::vector<float> *>> pruningValues_;
-  
-  std::list<std::vector<float>> rawPruningValues_;
+  std::vector<std::vector<std::vector<float>>*> pruningValues_;
   
 public:
   revDP(const problem& Problem, std::vector<float> baseValues);

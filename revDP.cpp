@@ -2,6 +2,7 @@
 // Created by rick on 12.03.20.
 //
 
+#include <queue>
 #include "revDP.h"
 
 revDP::revDP(const problem& Problem, std::vector<float> baseValues):
@@ -16,11 +17,9 @@ revDP::revDP(const problem& Problem, std::vector<float> baseValues):
   
     baseValues.push_back(0);
     
-    rawPruningValues_.push_back(baseValues);
-    
     pruningValues_.resize(elements_.size());//todo: grenzen beachten
     
-    pruningValues_[0].push_back( &rawPruningValues_.front());
+    pruningValues_[0]->emplace_back(baseValues);
   }
 
 void revDP::run()
@@ -29,38 +28,36 @@ void revDP::run()
   //! adds element to all allowed
   for (auto element = elements_.end(); element != elements_.begin(); --element)
   {
-    pruningValues_[counter + 1] = pruningValues_[counter];
-    
-    for (auto oldSol: pruningValues_[counter])
+    pruningValues_[counter + 1]->resize(pruningValues_[counter]->size() * 2);
+  
+    for (auto oldSol: *pruningValues_[counter])
     {
-      if (oldSol->at(0) - element->at(0) >= 0)
+      pruningValues_[counter + 1]->emplace_back(oldSol);
+    }
+    
+    for (auto oldSol: *pruningValues_[counter])
+    {
+      if (oldSol.at(0) - element->at(0) >= 0)
       {
         std::vector<float> newSolution(numberOfFunctions_ + 2, 0);
-        
-        newSolution[0] = oldSol->at(0) - element->at(0);
-        
-        newSolution[newSolution.size() - 1] = 0;
-  
-        for(int i = 1; i <= numberOfFunctions_ ; ++i )
+    
+        newSolution[0] = oldSol.at(0) - element->at(0);
+    
+        newSolution.back() = 0;
+    
+        for (int i = 1; i <= numberOfFunctions_; ++i)
         {
-          newSolution[i] = oldSol->at(i) - element->at(functionSubset_[i]);
+          newSolution[i] =
+              oldSol.at(i) - element->at(functionSubset_[i]) < 0 ? 0 : oldSol.at(i) - element->at(functionSubset_[i]);
         }
         
         bool hasDominated = false;
         
         bool wasDominated = false;
         
-        for (auto sol = pruningValues_[counter + 1].begin(); sol != pruningValues_[counter + 1].end(); ++sol)
+        for (auto sol = pruningValues_[counter + 1]->begin(); sol != pruningValues_[counter + 1]->end(); ++sol)
         {
-          if((**sol).back() > newSolution[0])
-          {
-            rawPruningValues_.emplace_back(newSolution);
-            
-            pruningValues_[counter + 1].insert(sol, &rawPruningValues_.back());
-            break;
-          }
-          
-          switch(compareInterval(**sol, newSolution))
+          switch(compareInterval(*sol, newSolution))
           {
             case interval::disjunct:
             {
@@ -69,16 +66,17 @@ void revDP::run()
             
             case interval::left:
             {
-              if(dominates(**sol, newSolution))
+              if(dominates(*sol, newSolution))
               {
-                if(newSolution.back() <= (**sol).back())
+                if(newSolution.back() <= sol->back())
                 {
-                  newSolution.back() = (**sol).back() + 1;
+                  newSolution.back() = sol->back() + 1;
                 }
               }
-              if(dominates(newSolution, **sol))
+              if(dominates(newSolution, *sol))
               {
-                pruningValues_[counter + 1].erase(sol);
+                sol->front() = -1;
+                sol->back() = -1;
                 hasDominated = true;
               }
               break;
@@ -86,18 +84,14 @@ void revDP::run()
             
             case interval::right:
             {
-              if(!hasDominated and dominates(**sol, newSolution))
+              if(!hasDominated and dominates(*sol, newSolution))
               {
                 wasDominated = true;
               }
-              if(dominates(newSolution, **sol))
+              if(dominates(newSolution, *sol))
               {
-                rawPruningValues_.push_back(**sol);
+                sol->back() = newSolution[0] + 1;
                 
-                rawPruningValues_.back().back() = newSolution[0] + 1;
-                
-                pruningValues_[counter + 1].insert(sol, &rawPruningValues_.back());
-  
                 hasDominated = true;
               }
               break;
@@ -105,13 +99,14 @@ void revDP::run()
               
             case interval::equal:
             {
-              if(dominates(**sol, newSolution))
+              if(dominates(*sol, newSolution))
               {
                 wasDominated = true;
               }
-              if(dominates(newSolution, **sol))
+              if(dominates(newSolution, *sol))
               {
-                pruningValues_[counter + 1].erase(sol);
+                sol->front() = -1;
+                sol->back() = -1;
               }
               break;
             }
@@ -122,8 +117,25 @@ void revDP::run()
             break;
           }
         }
+        if(!wasDominated)
+        {
+          pruningValues_[counter + 1]->emplace_back(newSolution);
+        }
       }
     }
+    
+    std::vector<std::vector<float>> nonDominatedSol(pruningValues_[counter + 1]->size(), std::vector<float>(numberOfFunctions_ + 2));
+    
+    for (auto sol : *pruningValues_[counter + 1])
+    {
+      if(sol[0] != -1)
+      {
+        nonDominatedSol.emplace_back(sol);
+      }
+    }
+  
+    pruningValues_[counter + 1] = &nonDominatedSol;
+    
     ++counter;
   }
 }
@@ -143,7 +155,7 @@ bool revDP::dominates(std::vector<float> &sol1, std::vector<float> &sol2)
 
 interval revDP::compareInterval(std::vector<float> &oldSol, std::vector<float> &newSol)
 {
-  if(oldSol[0] < newSol.back())
+  if(oldSol[0] < newSol.back() or newSol[0] < oldSol.back())
   {
     return interval::disjunct;
   }

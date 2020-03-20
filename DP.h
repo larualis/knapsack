@@ -12,15 +12,21 @@
 class DP
 {
 private:
+  DP(const problem &Problem, std::vector<std::vector<std::vector<float>> *> pruningValues);
+  
   const std::vector<std::vector<float>>& elements_;
  
   float capacity_;
  
   int numberOfFunctions_;
   
-  std::vector<int> functionSubset_;
+  std::vector<int> functionsToCompare_;
+  
+  std::vector<int> functionsRestricted_;
   
   std::vector<std::vector<float>> solutions_;
+  
+  std::vector<std::vector<std::vector<float>>*> pruningValues_;
   
 public:
   DP(const problem& Problem, std::vector<int>& functionsToCompare);
@@ -33,6 +39,7 @@ private:
   
   bool dominates(std::vector<float>& sol1, std::vector<float>& sol2, bool lastElement);
   
+  bool pruneDomination(std::vector<float> &sol, int counter);
 };
 
 

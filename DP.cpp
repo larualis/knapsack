@@ -5,21 +5,39 @@
 #include "DP.h"
 #include "problem.h"
 
+DP::DP(const problem &Problem, std::vector<std::vector<std::vector<float>>*> pruningValues):
+    elements_(Problem.getElements()),
+    capacity_(Problem.getCapacity()),
+    numberOfFunctions_(Problem.getNumberOfFunctions()),
+    functionsRestricted_(Problem.getRestrictedFunctions()),
+    pruningValues_(std::move(pruningValues))
+{
+  solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
+  functionsToCompare_.reserve(numberOfFunctions_);
+  for(int i = 1; i <= numberOfFunctions_; ++i)
+  {
+    functionsToCompare_.push_back(i);
+  }
+}
+
 DP::DP(const problem &Problem, std::vector<int>& functionsToCompare):
     elements_(Problem.getElements()),
     capacity_(Problem.getCapacity()),
     numberOfFunctions_(functionsToCompare.size()),
-    functionSubset_(functionsToCompare)
+    functionsToCompare_(functionsToCompare)
 {
   solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
 }
 
 void DP::run()
 {
+  int counter = 0;
   //! adds element to all allowed
   for (auto element = elements_.begin(); element != elements_.end(); ++element)
   {
     int prevSolutionSize = solutions_.size();
+    
+    ++counter;
     
     for (int sol = 0; sol < prevSolutionSize; ++sol)
     {
@@ -31,7 +49,7 @@ void DP::run()
   
         for(int i = 1; i <= numberOfFunctions_; ++i)
         {
-          newSolution[i] = solutions_[sol][i] + element->at(functionSubset_[i - 1]);
+          newSolution[i] = solutions_[sol][i] + element->at(functionsToCompare_[i - 1]);
         }
         
         solutions_.push_back(newSolution);
@@ -39,6 +57,18 @@ void DP::run()
     }
     
     bool lastElement = element == elements_.end() - 1;
+    
+    if(!pruningValues_.empty())
+    {
+      for (auto sol = solutions_.begin(); sol < solutions_.end(); ++sol)
+      {
+        if(!pruneDomination(*sol, counter))
+        {
+          sol = solutions_.erase(sol);
+          --sol;
+        }
+      }
+    }
   
     //! simple pareto domination
     for (int pos = 0; pos < solutions_.size(); ++pos)
@@ -85,6 +115,29 @@ bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool last
   }
   
   return true;
+}
+
+bool DP::pruneDomination(std::vector<float> &sol, int counter)
+{
+  for (auto pruneSol : *(pruningValues_[counter]))
+  {
+    if(sol.begin() <= pruneSol.begin() and sol.begin() >= pruneSol.end())
+    {
+      bool valid = true;
+      for(auto i: functionsRestricted_)
+      {
+        if(valid and sol[i] > pruneSol[i])
+        {
+          valid = false;
+        }
+      }
+      if (valid)
+      {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 const std::vector<std::vector<float>> &DP::getSolutions() const

@@ -8,13 +8,15 @@
 
 int main()
 {
-  std::vector<std::pair<int, int>> restrictedFunctions {{1,10}, {2,10}};
+  std::vector<int> restrictedFunctions {1,2};
+  
+  std::vector<float> slack {20, 20};
   
   std::string data = "../python/knapsack.txt";
   
-  problem Problem(data, 150, 2, restrictedFunctions);
+  problem Problem(data, 150, 2, restrictedFunctions, slack);
   
-  DP restrictedDP(Problem);
+  DP restrictedDP(Problem, restrictedFunctions);
   
   restrictedDP.run();
   

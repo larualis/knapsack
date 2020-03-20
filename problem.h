@@ -17,26 +17,26 @@ private:
   
   int numberOfFunctions_;
   
-  std::vector<std::pair<int, int>> restrictedFunctions_;
+  std::vector<int> restrictedFunctions_;
+  
+  std::vector<float> slack_;
+  
+  std::vector<std::vector<float>> elements_;
 public:
   float getCapacity() const;
   
   int getNumberOfFunctions() const;
   
-  const std::vector<std::pair<int, int>> &getRestrictedFunctions() const;
-
-private:
+  const std::vector<int> &getRestrictedFunctions() const;
   
-  std::vector<std::vector<float>> elements_;
-public:
   const std::vector<std::vector<float>> &getElements() const;
 
 private:
   
-  void readData(std::string filename);
+  void readData(std::string& filename);
 
 public:
-  problem(std::string filename, float capacity, int numberOfFunctions,  std::vector<std::pair<int, int>> restrictedFunctions);
+  problem(std::string filename, float capacity, int numberOfFunctions,  std::vector<int> restrictedFunctions, std::vector<float> slack);
 };
 
 

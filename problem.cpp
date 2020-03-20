@@ -4,16 +4,19 @@
 
 #include "problem.h"
 
+#include <utility>
+
 problem::problem(std::string filename, float capacity, int numberOfFunctions,
-                 std::vector<std::pair<int, int>> restrictedFunctions):
+                 std::vector<int> restrictedFunctions, std::vector<float> slack):
                  capacity_(capacity),
                  numberOfFunctions_(numberOfFunctions),
-                 restrictedFunctions_(restrictedFunctions)
+                 restrictedFunctions_(std::move(restrictedFunctions)),
+                 slack_(std::move(slack))
 {
   readData(filename);
 }
 
-void problem::readData(std::string filename)
+void problem::readData(std::string& filename)
 {
   std::ifstream file;
   
@@ -47,7 +50,7 @@ int problem::getNumberOfFunctions() const
   return numberOfFunctions_;
 }
 
-const std::vector<std::pair<int, int>> &problem::getRestrictedFunctions() const
+const std::vector<int> &problem::getRestrictedFunctions() const
 {
   return restrictedFunctions_;
 }

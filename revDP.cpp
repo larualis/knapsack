@@ -8,13 +8,9 @@
 revDP::revDP(const problem& Problem, std::vector<float> baseValues):
   elements_(Problem.getElements()),
   capacity_(Problem.getCapacity()),
+  functionSubset_(Problem.getRestrictedFunctions()),
   numberOfFunctions_(Problem.getRestrictedFunctions().size())
   {
-    for (auto x: Problem.getRestrictedFunctions())
-    {
-      functionSubset_.push_back(x.first);
-    }
-  
     baseValues.push_back(0);
     
     pruningValues_.resize(elements_.size());//todo: grenzen beachten

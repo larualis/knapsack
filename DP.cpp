@@ -3,29 +3,16 @@
 //
 
 #include "DP.h"
+#include "problem.h"
 
-DP::DP(const std::vector<std::vector<float>>& Elements, float capacity, int numberOfFunctions, std::vector<int> functionSubset):
-    elements_(Elements),
-    capacity_(capacity),
-    numberOfFunctions_(numberOfFunctions),
-    functionSubset_(functionSubset)
-{
-  solutions_.emplace_back(std::vector<float> (numberOfFunctions + 1, 0));
-}
-
-DP::DP(const problem& Problem):
+DP::DP(const problem &Problem, std::vector<int>& functionsToCompare):
     elements_(Problem.getElements()),
     capacity_(Problem.getCapacity()),
-    numberOfFunctions_(Problem.getNumberOfFunctions())
-    {
-      for (auto x: Problem.getRestrictedFunctions())
-        {
-          functionSubset_.push_back(x.first);
-        }
-  
-      solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
-  
-    }
+    numberOfFunctions_(functionsToCompare.size()),
+    functionSubset_(functionsToCompare)
+{
+  solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
+}
 
 void DP::run()
 {
@@ -39,10 +26,12 @@ void DP::run()
       if (solutions_[sol][0] + element->at(0) <= capacity_)
       {
         std::vector<float> newSolution(numberOfFunctions_ + 1, 0);
+        
+        newSolution[0] = solutions_[sol][0] + element->at(0);
   
-        for(int i = 0; i <= numberOfFunctions_ ; ++i )
+        for(int i = 1; i <= numberOfFunctions_; ++i)
         {
-          newSolution[i] = solutions_[sol][i] + element->at(i); //[i];
+          newSolution[i] = solutions_[sol][i] + element->at(functionSubset_[i - 1]);
         }
         
         solutions_.push_back(newSolution);
@@ -87,7 +76,7 @@ bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool last
     return false;
   }
   
-  for (auto i: functionSubset_)
+  for (int i = 1; i <= numberOfFunctions_; ++i)
   {
     if(sol1[i] < sol2[i])
     {

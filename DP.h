@@ -21,20 +21,17 @@ private:
   std::vector<int> functionSubset_;
   
   std::vector<std::vector<float>> solutions_;
-public:
-  const std::vector<std::vector<float>> &getSolutions() const;
-
-public:
-  DP(const problem& Problem);
   
-  DP(const std::vector<std::vector<float>> &Elements, float capacity, int numberOfFunctions, std::vector<int> functionSubset);
+public:
+  DP(const problem& Problem, std::vector<int>& functionsToCompare);
   
   void run();
+  
+  const std::vector<std::vector<float>> &getSolutions() const;
 
 private:
   
   bool dominates(std::vector<float>& sol1, std::vector<float>& sol2, bool lastElement);
-  
   
 };
 

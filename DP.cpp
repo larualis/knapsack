@@ -2,6 +2,7 @@
 // Created by rick on 11.03.20.
 //
 
+#include <iostream>
 #include "DP.h"
 #include "problem.h"
 
@@ -39,6 +40,8 @@ void DP::run()
     
     ++counter;
     
+    std::cout <<counter<< std::endl;
+    
     for (int sol = 0; sol < prevSolutionSize; ++sol)
     {
       if (solutions_[sol][0] + element->at(0) <= capacity_)
@@ -56,13 +59,14 @@ void DP::run()
       }
     }
     
-    bool lastElement = element == elements_.end() - 1;
+    bool lastElement = element == (elements_.end() - 1);
     
+    //! rev pruning
     if(!pruningValues_.empty())
     {
       for (auto sol = solutions_.begin(); sol < solutions_.end(); ++sol)
       {
-        if(!pruneDomination(*sol, counter))
+        if(!isValidAccordingToPruning(*sol, counter))
         {
           sol = solutions_.erase(sol);
           --sol;
@@ -117,21 +121,22 @@ bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool last
   return true;
 }
 
-bool DP::pruneDomination(std::vector<float> &sol, int counter)
+bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter)
 {
-  for (auto pruneSol : *(pruningValues_[counter]))
+  for (auto pruneSol : *(pruningValues_[elements_.size() - counter]))
   {
-    if(sol.begin() <= pruneSol.begin() and sol.begin() >= pruneSol.end())
+    if(sol.front() <= pruneSol.front() and sol.back() >= pruneSol.back())
     {
-      bool valid = true;
-      for(auto i: functionsRestricted_)
+      bool validInRound = true;
+      for (auto i: functionsRestricted_)
       {
-        if(valid and sol[i] > pruneSol[i])
+        if (sol[i] < pruneSol[i])
         {
-          valid = false;
+          validInRound = false;
+          break;
         }
       }
-      if (valid)
+      if (validInRound)
       {
         return true;
       }

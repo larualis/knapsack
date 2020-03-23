@@ -12,9 +12,9 @@
 enum class interval : int
 {
   disjunct,
-  left,
-  right,
-  equal
+  capacityLower,
+  capacityHigher,
+  capacityEqual
 };
 
 class revDP
@@ -29,18 +29,22 @@ private:
   
   std::vector<int> functionSubset_;
   
-  std::vector<std::vector<std::vector<float>>*> pruningValues_;
-  
+  std::vector<std::vector<std::vector<float> >* > pruningValues_;
 public:
+  
   revDP(const problem& Problem, std::vector<float> baseValues);
   
   void run();
+  
+  const std::vector<std::vector<std::vector<float>> *> &getPruningValues() const;
 
 private:
   
   bool dominates(std::vector<float>& sol1, std::vector<float>& sol2);
   
   interval compareInterval(std::vector<float> &sol1, std::vector<float> &sol2);
+  
+  bool same(std::vector<float> &sol1, std::vector<float> &sol2);
 };
 
 

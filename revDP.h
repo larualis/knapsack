@@ -34,10 +34,7 @@ public:
   
   revDP(const problem& Problem, std::vector<float> baseValues);
   
-  void run();
-  
-  const std::vector<std::vector<std::vector<float>> *> &getPruningValues() const;
-
+  std::vector<std::vector<std::vector<float>> *> run();
 private:
   
   bool dominates(std::vector<float>& sol1, std::vector<float>& sol2);

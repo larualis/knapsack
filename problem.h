@@ -31,6 +31,8 @@ public:
   
   const std::vector<std::vector<float>> &getElements() const;
 
+  const std::vector<float> &getSlack() const;
+
 private:
   
   void readData(std::string& filename);

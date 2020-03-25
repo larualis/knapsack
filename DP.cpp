@@ -11,7 +11,7 @@ DP::DP(const problem &Problem, std::vector<std::vector<std::vector<float>>*> pru
     capacity_(Problem.getCapacity()),
     numberOfFunctions_(Problem.getNumberOfFunctions()),
     functionsRestricted_(Problem.getRestrictedFunctions()),
-    pruningValues_(std::move(pruningValues))
+    pruningValues_(pruningValues)
 {
   solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
   functionsToCompare_.reserve(numberOfFunctions_);
@@ -21,7 +21,7 @@ DP::DP(const problem &Problem, std::vector<std::vector<std::vector<float>>*> pru
   }
 }
 
-DP::DP(const problem &Problem, std::vector<int>& functionsToCompare):
+DP::DP(const problem &Problem, std::vector<int> functionsToCompare):
     elements_(Problem.getElements()),
     capacity_(Problem.getCapacity()),
     numberOfFunctions_(functionsToCompare.size()),

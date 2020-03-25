@@ -1,7 +1,7 @@
 import random
 
-numberOfElements = 100
-numberOfFunctions = 4
+numberOfElements = 200
+numberOfFunctions = 3
 maxValue = 100
 
 elements = []

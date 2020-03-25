@@ -6,46 +6,53 @@
 #include "problem.h"
 #include "revDP.h"
 
-
-int main()
+template <class x>
+void printVector(std::vector<x> vec)
 {
-  std::vector<int> restrictedFunctions {1,2};
-  
-  std::vector<float> slack {200, 200};
-  
-  std::string data = "../python/knapsack.txt";
-  
-  problem Problem(data, 250, 4, restrictedFunctions, slack);
-  
-  DP restrictedDP(Problem, restrictedFunctions);
-  
-  restrictedDP.run();
-  
-  auto solutions = restrictedDP.getSolutions();
-  
-  std::vector<float> test = solutions[0];
-  
-  for (auto sol: solutions)
+  for (auto ele : vec)
   {
-    for(int i = 1; i <= Problem.getRestrictedFunctions().size(); ++i)
+    std::cout << ele << " ";
+  }
+  std::cout << std::endl;
+}
+
+void advancedPruning(problem Problem)
+{
+  //! restricted DP and data extraction
+  std::vector<float> minimalFunctionValues(Problem.getRestrictedFunctions().size(), 0);
+  
+  for (int i = 0; i < Problem.getRestrictedFunctions().size(); ++i)
+  {
+    DP restrictedDP(Problem, std::vector<int> {Problem.getRestrictedFunctions()[i]});
+  
+    restrictedDP.run();
+  
+    auto solutions = restrictedDP.getSolutions();
+  
+    for (auto sol: solutions)
     {
-      if(test[i] > sol[i])
+      if(minimalFunctionValues[i] < sol[1])
       {
-        test[i] = sol[i];
+        minimalFunctionValues[i] = sol[1];
       }
     }
   }
   
-  for (int i = 1; i < test.size(); ++i )
+  for (int i = 0; i < minimalFunctionValues.size(); ++i )
   {
-    test[i] = test[i] - slack[i - 1];
+    minimalFunctionValues[i] = minimalFunctionValues[i] - Problem.getSlack()[i];
   }
+  std::cout<<"vector for calc"<<std::endl;
   
-  revDP rDP(Problem, test);
+  printVector<float>(minimalFunctionValues);
   
-  rDP.run();
+  //! rev DP
+  revDP rDP(Problem, minimalFunctionValues);
   
-  DP finalDP(Problem, rDP.getPruningValues());
+  auto pruningValues = rDP.run();
+  
+  //! final DP
+  DP finalDP(Problem, pruningValues);
   
   finalDP.run();
   
@@ -55,12 +62,60 @@ int main()
   
   for (auto sol: finaleSolution)
   {
-    for (auto ele : sol)
-    {
-      std::cout << ele << " ";
-    }
-    std::cout << "\n";
+    printVector<float>(sol);
   }
+  
+  for(auto & v : pruningValues)
+  {
+    v->clear();
+    
+    auto d = v;
+    
+    v = nullptr;
+    
+    delete d;
+  }
+}
+
+void standartDP(problem Problem, std::vector<int> functionsToCompare)
+{
+  DP dp(Problem, functionsToCompare);
+  
+  dp.run();
+  
+  auto finaleSolution = dp.getSolutions();
+  
+  std::sort(finaleSolution.begin(), finaleSolution.end(), [](const std::vector<float> & a, const std::vector<float> & b){ return a[1] < b[1]; });
+  
+  for (auto sol: finaleSolution)
+  {
+    printVector<float>(sol);
+  }
+}
+
+int main(int argc, char **argv)
+{
+  //!input
+  std::vector<int> restrictedFunctions {1,2};
+  
+  std::vector<float> slack {200, 200};
+  
+  std::string data = "../python/knapsack.txt";
+  
+  problem Problem(data, 250, 3, restrictedFunctions, slack);
+  
+  advancedPruning(Problem);
+  
+  /**
+  std::vector<int> functionsToCompare(Problem.getNumberOfFunctions(), 0);
+  
+  for (int i = 0; i < Problem.getNumberOfFunctions(); ++i)
+  {
+    functionsToCompare[i] = i + 1;
+  }
+  
+  standartDP(Problem, functionsToCompare);
+   **/
   
   return 0;
 }

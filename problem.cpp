@@ -54,3 +54,8 @@ const std::vector<int> &problem::getRestrictedFunctions() const
 {
   return restrictedFunctions_;
 }
+
+const std::vector<float> &problem::getSlack() const
+{
+  return slack_;
+}

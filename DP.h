@@ -27,7 +27,7 @@ private:
   std::vector<std::vector<std::vector<float>>*> pruningValues_;
   
 public:
-  DP(const problem& Problem, std::vector<int>& functionsToCompare);
+  DP(const problem& Problem, std::vector<int> functionsToCompare);
   
   DP(const problem &Problem, std::vector<std::vector<std::vector<float>> *> pruningValues);
   

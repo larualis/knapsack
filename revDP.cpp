@@ -11,6 +11,8 @@ revDP::revDP(const problem& Problem, std::vector<float> baseValues):
   functionSubset_(Problem.getRestrictedFunctions()),
   numberOfFunctions_(Problem.getRestrictedFunctions().size())
   {
+    baseValues.emplace(baseValues.begin(), capacity_);
+  
     baseValues.push_back(0);
     
     pruningValues_.resize(elements_.size());//todo: grenzen beachten
@@ -20,7 +22,7 @@ revDP::revDP(const problem& Problem, std::vector<float> baseValues):
     pruningValues_[0]->emplace_back(baseValues);
   }
 
-void revDP::run()
+std::vector<std::vector<std::vector<float>> *> revDP::run()
 {
   int counter = 0;
   //! adds element to all allowed
@@ -159,15 +161,16 @@ void revDP::run()
       }
     }
     auto test = pruningValues_[counter + 1];
+    
+    test->clear();
   
-    pruningValues_[counter + 1] = nullptr;
+    pruningValues_[counter + 1] = nonDominatedSol;
     
     delete test;
     
-    pruningValues_[counter + 1] = nonDominatedSol;
-    
     ++counter;
   }
+  return pruningValues_;
 }
 
 bool revDP::dominates(std::vector<float> &sol1, std::vector<float> &sol2)
@@ -208,11 +211,6 @@ interval revDP::compareInterval(std::vector<float> &oldSol, std::vector<float> &
     return interval::capacityLower;
   }
   
-}
-
-const std::vector<std::vector<std::vector<float>> *> &revDP::getPruningValues() const
-{
-  return pruningValues_;
 }
 
 bool revDP::same(std::vector<float> &sol1, std::vector<float> &sol2)

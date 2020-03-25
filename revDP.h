@@ -5,8 +5,8 @@
 #ifndef KNAPSACK_REVDP_H
 #define KNAPSACK_REVDP_H
 
-#import <vector>
-#import <list>
+#include <vector>
+#include <list>
 #include "problem.h"
 
 enum class interval : int

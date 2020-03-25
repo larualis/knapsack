@@ -200,13 +200,9 @@ interval revDP::compareInterval(std::vector<float> &oldSol, std::vector<float> &
   
   if (oldSol[0] > newSol[0])
   {
-    if (oldSol.back() <= newSol[0])
-    {
-      return interval::capacityHigher;
-    }
+    return interval::capacityHigher;
   }
-  
-  if (oldSol[0] >= newSol.back())
+  else
   {
     return interval::capacityLower;
   }

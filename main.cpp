@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <chrono>
 #include "DP.h"
 #include "problem.h"
 #include "revDP.h"
@@ -16,9 +17,11 @@ void printVector(std::vector<x> vec)
   std::cout << std::endl;
 }
 
-void advancedPruning(problem Problem)
+void advancedPruning(problem &Problem)
 {
   //! restricted DP and data extraction
+  auto t1 = std::chrono::high_resolution_clock::now();
+  
   std::vector<float> minimalFunctionValues(Problem.getRestrictedFunctions().size(), 0);
   
   for (int i = 0; i < Problem.getRestrictedFunctions().size(); ++i)
@@ -56,6 +59,8 @@ void advancedPruning(problem Problem)
   
   finalDP.run();
   
+  auto t2 = std::chrono::high_resolution_clock::now();
+  
   auto finaleSolution = finalDP.getSolutions();
   
   std::sort(finaleSolution.begin(), finaleSolution.end(), [](const std::vector<float> & a, const std::vector<float> & b){ return a[1] < b[1]; });
@@ -64,6 +69,10 @@ void advancedPruning(problem Problem)
   {
     printVector<float>(sol);
   }
+  
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+  
+  std::cout <<"Took: " << duration;
   
   for(auto & v : pruningValues)
   {
@@ -77,11 +86,14 @@ void advancedPruning(problem Problem)
   }
 }
 
-void standartDP(problem Problem, std::vector<int> functionsToCompare)
+void standartDP(problem &Problem, std::vector<int> functionsToCompare)
 {
   DP dp(Problem, functionsToCompare);
   
+  auto t1 = std::chrono::high_resolution_clock::now();
   dp.run();
+  auto t2 = std::chrono::high_resolution_clock::now();
+  
   
   auto finaleSolution = dp.getSolutions();
   
@@ -91,6 +103,9 @@ void standartDP(problem Problem, std::vector<int> functionsToCompare)
   {
     printVector<float>(sol);
   }
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+  
+  std::cout <<"Took: " << duration;
 }
 
 int main(int argc, char **argv)
@@ -104,19 +119,28 @@ int main(int argc, char **argv)
   
   problem Problem(data, 250, 3, restrictedFunctions, slack);
   
-  advancedPruning(Problem);
-  
-  /**
-  std::vector<int> functionsToCompare(Problem.getNumberOfFunctions(), 0);
-  
-  for (int i = 0; i < Problem.getNumberOfFunctions(); ++i)
+  switch (std::stoi(argv[1]))
   {
-    functionsToCompare[i] = i + 1;
+    case 0:
+      {
+        std::vector<int> functionsToCompare(Problem.getNumberOfFunctions(), 0);
+  
+        for (int i = 0; i < Problem.getNumberOfFunctions(); ++i)
+        {
+          functionsToCompare[i] = i + 1;
+        }
+  
+        standartDP(Problem, functionsToCompare);
+        break;
+      }
+    case 1:
+      {
+        advancedPruning(Problem);
+        break;
+      }
+    default:
+      std::cout<<"wrong argument"<<std::endl;
   }
-  
-  standartDP(Problem, functionsToCompare);
-   **/
-  
   return 0;
 }
 

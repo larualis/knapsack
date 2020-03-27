@@ -5,6 +5,7 @@
 #include <iostream>
 #include "DP.h"
 #include "problem.h"
+#include <list>
 
 DP::DP(const problem &Problem, std::vector<std::vector<std::vector<float>>*> pruningValues):
     elements_(Problem.getElements()),
@@ -33,9 +34,75 @@ DP::DP(const problem &Problem, std::vector<int> functionsToCompare):
 void DP::run()
 {
   int counter = 0;
-  //! adds element to all allowed
-  for (auto element = elements_.begin(); element != elements_.end(); ++element)
+  
+  float weightOfRemainingElements = 0;
+  
+  for (const auto &element : elements_)
   {
+    weightOfRemainingElements += element.at(0);
+  }
+  
+  for (const auto & element : elements_)
+  {
+    counter++;
+    
+    int i = 0;
+    
+    int j = 0;
+  
+    std::vector<std::vector<float>> previousSolutions = std::move(solutions_);
+    
+    std::list<std::vector<float>> compareSol;
+    
+    while (j < previousSolutions.size() and previousSolutions[j][0] + weightOfRemainingElements <= capacity_)
+    {
+      ++j;
+    }
+    
+    compareSol.push_back(previousSolutions[j]);
+    
+    solutions_.push_back(previousSolutions[j]);
+    
+    ++j;
+    
+    while (i < previousSolutions.size() and previousSolutions[i][0] + element.at(0) <= capacity_)
+    {
+      std::vector<float> newSolution(numberOfFunctions_ + 1, 0);
+      
+      newSolution[0] = previousSolutions[i][0] + element.at(0);
+      
+      for (int idx = 1; idx <= numberOfFunctions_; ++idx)
+      {
+        newSolution[idx] = previousSolutions[i][idx] + element.at(functionsToCompare_[idx - 1]);
+      }
+      
+      while (j < previousSolutions.size() and lex(previousSolutions[j], newSolution))
+      {
+        maintainNonDominated(previousSolutions[j], compareSol);
+        
+        ++j;
+      }
+      maintainNonDominated(newSolution, compareSol);
+      
+      ++i;
+    }
+    
+    while(j < previousSolutions.size())
+    {
+      maintainNonDominated(previousSolutions[j], compareSol);
+  
+      ++j;
+    }
+  
+    weightOfRemainingElements -= element.at(0);
+    
+    if(weightOfRemainingElements == 0)
+    {
+      finalSol = std::move(compareSol);
+    }
+  }
+}
+    /**
     int prevSolutionSize = solutions_.size();
     
     ++counter;
@@ -102,10 +169,11 @@ void DP::run()
     }
   }
 }
+     **/
 
 bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool lastElement)
 {
-  if(sol1[0] > sol2[0] and !lastElement)
+  if(!lastElement and sol1[0] > sol2[0])
   {
     return false;
   }
@@ -145,7 +213,77 @@ bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter)
   return false;
 }
 
+bool DP::lex(std::vector<float> &sol1, std::vector<float> &sol2)
+{
+  if (sol1[0] < sol2[0])
+  {
+    return true;
+  }
+  
+  return sol1[0] == sol2[0] and dlex(sol1, sol2);
+}
+
+bool DP::dlex(std::vector<float> &sol1, std::vector<float> &sol2)
+{
+  for (int i = 1; i <= numberOfFunctions_; ++i)
+  {
+    if (sol1[i] != sol2[i])
+    {
+      return sol1[i] > sol2[i];
+    }
+  }
+  return true;
+}
+
+void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol)
+{
+  bool newSolutionIsGreater = false;
+  
+  bool dominated = false;
+  
+  for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
+  {
+    if(!newSolutionIsGreater and !dlex(*sol, newSolution))
+    {
+      newSolutionIsGreater = true;
+      
+      solutions_.push_back(newSolution);
+      
+      sol = compareSol.insert(sol, newSolution);
+      
+      ++sol;
+    }
+    
+    if(!newSolutionIsGreater and dominates(*sol, newSolution, true))
+    {
+      dominated = true;
+      break;
+    }
+    
+    if(newSolutionIsGreater)
+    {
+      if(dominates(newSolution, *sol, true))
+      {
+        sol = compareSol.erase(sol);
+        --sol;
+      }
+    }
+  }
+  
+  if(!dominated and !newSolutionIsGreater)
+  {
+    solutions_.push_back(newSolution);
+  
+    compareSol.push_back(newSolution);
+  }
+}
+
 const std::vector<std::vector<float>> &DP::getSolutions() const
 {
   return solutions_;
+}
+
+const std::list<std::vector<float>> &DP::getFinalSol() const
+{
+  return finalSol;
 }

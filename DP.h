@@ -7,6 +7,7 @@
 
 
 #include <vector>
+#include <list>
 #include "problem.h"
 
 class DP
@@ -24,6 +25,12 @@ private:
   
   std::vector<std::vector<float>> solutions_;
   
+  std::list<std::vector<float>> finalSol;
+public:
+  const std::list<std::vector<float>> &getFinalSol() const;
+
+private:
+  
   std::vector<std::vector<std::vector<float>>*> pruningValues_;
   
 public:
@@ -40,6 +47,12 @@ private:
   bool dominates(std::vector<float>& sol1, std::vector<float>& sol2, bool lastElement);
   
   bool isValidAccordingToPruning(std::vector<float> &sol, int counter);
+  
+  bool dlex(std::vector<float> &sol1, std::vector<float> &sol2);
+  
+  bool lex(std::vector<float> &sol1, std::vector<float> &sol2);
+  
+  void maintainNonDominated(std::vector<float>& newSolution, std::list<std::vector<float>>& compareSol);
 };
 
 

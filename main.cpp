@@ -95,11 +95,11 @@ void standartDP(problem &Problem, std::vector<int> functionsToCompare)
   auto t2 = std::chrono::high_resolution_clock::now();
   
   
-  auto finaleSolution = dp.getSolutions();
+  auto finaleSolution = dp.getFinalSol();
   
-  std::sort(finaleSolution.begin(), finaleSolution.end(), [](const std::vector<float> & a, const std::vector<float> & b){ return a[1] < b[1]; });
+  //std::sort(finaleSolution.begin(), finaleSolution.end(), [](const std::vector<float> & a, const std::vector<float> & b){ return a[1] < b[1]; });
   
-  for (auto sol: finaleSolution)
+  for (auto &sol: finaleSolution)
   {
     printVector<float>(sol);
   }

@@ -39,6 +39,8 @@ private:
 
 public:
   problem(std::string filename, float capacity, int numberOfFunctions,  std::vector<int> restrictedFunctions, std::vector<float> slack);
+  
+  problem(std::string filename, int numberOfFunctions, std::vector<int> restrictedFunctions, std::vector<float> slack);
 };
 
 

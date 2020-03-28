@@ -16,6 +16,22 @@ problem::problem(std::string filename, float capacity, int numberOfFunctions,
   readData(filename);
 }
 
+problem::problem(std::string filename, int numberOfFunctions,
+                 std::vector<int> restrictedFunctions, std::vector<float> slack):
+    numberOfFunctions_(numberOfFunctions),
+    restrictedFunctions_(std::move(restrictedFunctions)),
+    slack_(std::move(slack))
+{
+  readData(filename);
+  
+  capacity_ = 0;
+  for (auto &ele: elements_)
+  {
+    capacity_ += ele[0];
+  }
+  capacity_ = capacity_ /2;
+}
+
 void problem::readData(std::string& filename)
 {
   std::ifstream file;

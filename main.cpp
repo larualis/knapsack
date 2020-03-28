@@ -117,7 +117,7 @@ int main(int argc, char **argv)
   
   std::string data = "../python/knapsack.txt";
   
-  problem Problem(data, 250, 3, restrictedFunctions, slack);
+  problem Problem(data, 3, restrictedFunctions, slack);
   
   switch (std::stoi(argv[1]))
   {

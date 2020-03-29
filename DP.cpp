@@ -46,6 +46,8 @@ void DP::run()
   {
     counter++;
     
+    std::cout<<counter<<"\n";
+    
     int i = 0;
     
     int j = 0;
@@ -78,9 +80,25 @@ void DP::run()
       
       while (j < previousSolutions.size() and lex(previousSolutions[j], newSolution))
       {
+        if(!pruningValues_.empty())
+        {
+          if(!isValidAccordingToPruning(previousSolutions[j], counter))
+          {
+            ++j;
+            continue;
+          }
+        }
         maintainNonDominated(previousSolutions[j], compareSol);
         
         ++j;
+      }
+      if(!pruningValues_.empty())
+      {
+        if(!isValidAccordingToPruning(newSolution, counter))
+        {
+          ++i;
+          continue;
+        }
       }
       maintainNonDominated(newSolution, compareSol);
       
@@ -102,74 +120,6 @@ void DP::run()
     }
   }
 }
-    /**
-    int prevSolutionSize = solutions_.size();
-    
-    ++counter;
-    
-    std::cout <<counter<< std::endl;
-    
-    for (int sol = 0; sol < prevSolutionSize; ++sol)
-    {
-      if (solutions_[sol][0] + element->at(0) <= capacity_)
-      {
-        std::vector<float> newSolution(numberOfFunctions_ + 1, 0);
-        
-        newSolution[0] = solutions_[sol][0] + element->at(0);
-  
-        for(int i = 1; i <= numberOfFunctions_; ++i)
-        {
-          newSolution[i] = solutions_[sol][i] + element->at(functionsToCompare_[i - 1]);
-        }
-        
-        solutions_.push_back(newSolution);
-      }
-    }
-    
-    bool lastElement = element == (elements_.end() - 1);
-    
-    //! rev pruning
-    if(!pruningValues_.empty())
-    {
-      for (auto sol = solutions_.begin(); sol < solutions_.end(); ++sol)
-      {
-        if(!isValidAccordingToPruning(*sol, counter))
-        {
-          sol = solutions_.erase(sol);
-          --sol;
-        }
-      }
-    }
-  
-    //! simple pareto domination
-    for (int pos = 0; pos < solutions_.size(); ++pos)
-    {
-      bool solDominated = false;
-  
-      for (auto compareSol = solutions_.begin(); compareSol != solutions_.begin() + pos; ++compareSol)
-      {
-        auto sol = solutions_.begin() + pos;
-        
-        if (!solDominated and dominates(*compareSol, *sol, lastElement))
-        {
-         solutions_.erase(sol);
-         --pos;
-         break;
-        }
-        
-        if(dominates(*sol, *compareSol, lastElement))
-        {
-         compareSol = --solutions_.erase(compareSol);
-         
-         --pos;
-         
-         solDominated = true;
-        }
-      }
-    }
-  }
-}
-     **/
 
 bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool lastElement)
 {

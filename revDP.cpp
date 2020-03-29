@@ -24,22 +24,24 @@ revDP::revDP(const problem& Problem, std::vector<float> baseValues):
 
 std::vector<std::vector<std::vector<float>> *> revDP::run()
 {
-  int counter = 0;
+  int numberOfCurrentElement = 0;
   //! adds element to all allowed
   for (auto element = elements_.rbegin(); element != elements_.rend(); ++element)
   {
-    pruningValues_[counter + 1] = new std::vector<std::vector<float>>;
+    ++numberOfCurrentElement;
+    
+    pruningValues_[numberOfCurrentElement] = new std::vector<std::vector<float>>;
   
-    pruningValues_[counter + 1]->reserve(pruningValues_[counter]->size() * 2);
+    pruningValues_[numberOfCurrentElement]->reserve(pruningValues_[numberOfCurrentElement - 1]->size() * 2);
   
-    for (auto oldSol: *pruningValues_[counter])
+    for (auto oldSol: *pruningValues_[numberOfCurrentElement - 1])
     {
-      pruningValues_[counter + 1]->emplace_back(oldSol);
+      pruningValues_[numberOfCurrentElement]->emplace_back(oldSol);
     }
   
     int numberOfDominatedSolutions = 0;
     
-    for (auto oldSol: *pruningValues_[counter])
+    for (auto oldSol: *pruningValues_[numberOfCurrentElement - 1])
     {
       if (oldSol.at(0) - element->at(0) >= 0)
       {
@@ -64,7 +66,7 @@ std::vector<std::vector<std::vector<float>> *> revDP::run()
           int i = newSolution[2];
         }
         
-        for (auto sol = pruningValues_[counter + 1]->begin(); sol != pruningValues_[counter + 1]->end(); ++sol)
+        for (auto sol = pruningValues_[numberOfCurrentElement]->begin(); sol != pruningValues_[numberOfCurrentElement]->end(); ++sol)
         {
           if(sol->back() == -1)
           {
@@ -143,16 +145,16 @@ std::vector<std::vector<std::vector<float>> *> revDP::run()
         }
         if(!wasDominated)
         {
-          pruningValues_[counter + 1]->emplace_back(newSolution);
+          pruningValues_[numberOfCurrentElement]->emplace_back(newSolution);
         }
       }
     }
   
-    auto nonDominatedSol = new std::vector<std::vector<float>> (pruningValues_[counter + 1]->size() - numberOfDominatedSolutions, std::vector<float>(numberOfFunctions_ + 2));
+    auto nonDominatedSol = new std::vector<std::vector<float>> (pruningValues_[numberOfCurrentElement]->size() - numberOfDominatedSolutions, std::vector<float>(numberOfFunctions_ + 2));
 
     int pos = 0;
     
-    for (auto & i : *pruningValues_[counter + 1])
+    for (auto & i : *pruningValues_[numberOfCurrentElement])
     {
       if(i[0] != -1)
       {
@@ -160,15 +162,13 @@ std::vector<std::vector<std::vector<float>> *> revDP::run()
         ++pos;
       }
     }
-    auto test = pruningValues_[counter + 1];
+    auto test = pruningValues_[numberOfCurrentElement];
     
     test->clear();
   
-    pruningValues_[counter + 1] = nonDominatedSol;
+    pruningValues_[numberOfCurrentElement] = nonDominatedSol;
     
     delete test;
-    
-    ++counter;
   }
   return pruningValues_;
 }

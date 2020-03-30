@@ -107,6 +107,15 @@ void DP::run()
     
     while(j < previousSolutions.size())
     {
+      if(!pruningValues_.empty())
+      {
+        if(!isValidAccordingToPruning(previousSolutions[j], counter))
+        {
+          ++i;
+          continue;
+        }
+      }
+      
       maintainNonDominated(previousSolutions[j], compareSol);
   
       ++j;
@@ -141,14 +150,14 @@ bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool last
 
 bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter)
 {
-  for (auto pruneSol : *(pruningValues_[elements_.size() - counter]))
+  for (auto pruneSol = pruningValues_[elements_.size() - counter]->rbegin(); pruneSol != pruningValues_[elements_.size() - counter]->rend(); ++pruneSol)
   {
-    if(sol.front() <= pruneSol.front() and sol.back() >= pruneSol.back())
+    if(sol.front() <= pruneSol->front() and sol.back() >= pruneSol->back())
     {
       bool validInRound = true;
       for (auto i: functionsRestricted_)
       {
-        if (sol[i] < pruneSol[i])
+        if (sol[i] < pruneSol->at(i))
         {
           validInRound = false;
           break;

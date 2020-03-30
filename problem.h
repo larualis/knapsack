@@ -17,6 +17,10 @@ private:
   
   int numberOfFunctions_;
   
+  float sumOfWeights_;
+
+private:
+  
   std::vector<int> restrictedFunctions_;
   
   std::vector<float> slack_;
@@ -26,6 +30,8 @@ public:
   float getCapacity() const;
   
   int getNumberOfFunctions() const;
+  
+  float getSumOfWeights() const;
   
   const std::vector<int> &getRestrictedFunctions() const;
   

@@ -4,7 +4,9 @@
 
 #include "problem.h"
 
+#include <cmath>
 #include <utility>
+#include <cmath>
 
 problem::problem(std::string filename, float capacity, int numberOfFunctions,
                  std::vector<int> restrictedFunctions, std::vector<float> slack):
@@ -14,6 +16,12 @@ problem::problem(std::string filename, float capacity, int numberOfFunctions,
                  slack_(std::move(slack))
 {
   readData(filename);
+  
+  sumOfWeights_ = 0;
+  for (auto &ele: elements_)
+  {
+    sumOfWeights_ += ele[0];
+  }
 }
 
 problem::problem(std::string filename, int numberOfFunctions,
@@ -24,12 +32,12 @@ problem::problem(std::string filename, int numberOfFunctions,
 {
   readData(filename);
   
-  capacity_ = 0;
+  sumOfWeights_ = 0;
   for (auto &ele: elements_)
   {
-    capacity_ += ele[0];
+    sumOfWeights_ += ele[0];
   }
-  capacity_ = capacity_ /2;
+  capacity_ = std::floor(sumOfWeights_ /2);
 }
 
 void problem::readData(std::string& filename)
@@ -74,4 +82,9 @@ const std::vector<int> &problem::getRestrictedFunctions() const
 const std::vector<float> &problem::getSlack() const
 {
   return slack_;
+}
+
+float problem::getSumOfWeights() const
+{
+  return sumOfWeights_;
 }

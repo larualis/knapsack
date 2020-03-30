@@ -30,7 +30,7 @@ void advancedPruning(problem &Problem)
   
     restrictedDP.run();
   
-    auto solutions = restrictedDP.getSolutions();
+    auto solutions = restrictedDP.getFinalSol();
   
     for (auto sol: solutions)
     {
@@ -74,15 +74,9 @@ void advancedPruning(problem &Problem)
   
   std::cout <<"Took: " << duration;
   
-  for(auto & v : pruningValues)
+  while(!pruningValues.empty())
   {
-    v->clear();
-    
-    auto d = v;
-    
-    v = nullptr;
-    
-    delete d;
+    pruningValues.erase(pruningValues.end() - 1);
   }
 }
 
@@ -138,6 +132,13 @@ int main(int argc, char **argv)
         advancedPruning(Problem);
         break;
       }
+    case 2:
+    {
+      std::vector<int> functionsToCompare({2});
+    
+      standartDP(Problem, functionsToCompare);
+      break;
+    }
     default:
       std::cout<<"wrong argument"<<std::endl;
   }

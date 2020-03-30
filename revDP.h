@@ -39,9 +39,10 @@ private:
   
   bool dominates(std::vector<float>& sol1, std::vector<float>& sol2);
   
-  interval compareInterval(std::vector<float> &sol1, std::vector<float> &sol2);
+  bool dlex(std::vector<float> &sol1, std::vector<float> &sol2);
   
-  bool same(std::vector<float> &sol1, std::vector<float> &sol2);
+  void maintainNonDominated(std::vector<float> &newSolution, std::list<std::vector<float> *> &compareSol,
+                            std::vector<std::vector<float>> *currentSolution);
 };
 
 

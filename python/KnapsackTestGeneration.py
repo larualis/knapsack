@@ -1,8 +1,8 @@
 import random
 
-numberOfElements = 60
+numberOfElements = 30
 numberOfFunctions = 3
-maxValue = 1000
+maxValue = 100
 
 elements = []
 file = open("knapsack.txt", "w")

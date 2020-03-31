@@ -1,19 +1,23 @@
 import random
 
-numberOfElements = 30
+numberOfElements = 10
 numberOfFunctions = 3
-maxValue = 100
+maxValue = 10
 
 elements = []
 file = open("knapsack.txt", "w")
 
 for x in range(0, numberOfElements):
-    element = []
-    for y in range(0, numberOfFunctions + 1):
+    element = [random.randint(1, maxValue)]
+    for y in range(0, numberOfFunctions):
         element.append(random.randint(0, maxValue))
     elements.append(element)
 
-for element in elements:
-    for x in element:
-        file.write(str(x) + " ")
-    file.write("\n")
+for ele in range(len(elements)):
+    for x in range(len(elements[ele])):
+        if x != len(elements[ele]) - 1:
+            file.write(str(elements[ele][x]) + " ")
+        else:
+            file.write(str(elements[ele][x]))
+    if ele != len(elements) - 1:
+        file.write("\n")

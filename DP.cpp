@@ -61,12 +61,6 @@ void DP::run()
       ++j;
     }
     
-    compareSol.push_back(previousSolutions[j]);
-    
-    solutions_.push_back(previousSolutions[j]);
-    
-    ++j;
-    
     while (i < previousSolutions.size() and previousSolutions[i][0] + element.at(0) <= capacity_)
     {
       std::vector<float> newSolution(numberOfFunctions_ + 1, 0);
@@ -199,6 +193,15 @@ void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::ve
   bool newSolutionIsGreater = false;
   
   bool dominated = false;
+  
+  if(compareSol.empty())
+  {
+    solutions_.push_back(newSolution);
+  
+    compareSol.push_back(newSolution);
+    
+    return;
+  }
   
   for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
   {

@@ -60,12 +60,6 @@ std::vector<std::vector<std::vector<float>> *> revDP::run()
     
     weightOfRemainingElements -= element->at(0);
   
-    currentSolution->push_back((*previousSolution)[posOldSolutions]);
-  
-    compareSol.emplace_back(&(currentSolution->back()));
-  
-    ++posOldSolutions;
-  
     while (posNewSolutions < numberOfPreviousSolutions and (*previousSolution)[posNewSolutions][0] - element->at(0) >= 0)
     {
       std::vector<float> newSolution(numberOfFunctions_ + 2, 0);
@@ -109,6 +103,15 @@ void revDP::maintainNonDominated(std::vector<float> &newSolution, std::list<std:
   bool newSolutionIsGood = false;
   
   bool dominated = false;
+  
+  if (compareSol.empty())
+  {
+    currentSolution->push_back(newSolution);
+  
+    compareSol.push_back(&currentSolution->back());
+    
+    return;
+  }
   
   for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
   {

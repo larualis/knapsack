@@ -61,9 +61,7 @@ void advancedPruning(problem &Problem)
   
   auto t2 = std::chrono::high_resolution_clock::now();
   
-  auto finaleSolution = finalDP.getSolutions();
-  
-  std::sort(finaleSolution.begin(), finaleSolution.end(), [](const std::vector<float> & a, const std::vector<float> & b){ return a[1] < b[1]; });
+  auto finaleSolution = finalDP.getFinalSol();
   
   for (auto sol: finaleSolution)
   {

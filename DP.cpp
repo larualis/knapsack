@@ -74,43 +74,19 @@ void DP::run()
       
       while (j < previousSolutions.size() and lex(previousSolutions[j], newSolution))
       {
-        if(!pruningValues_.empty())
-        {
-          if(!isValidAccordingToPruning(previousSolutions[j], counter))
-          {
-            ++j;
-            continue;
-          }
-        }
-        maintainNonDominated(previousSolutions[j], compareSol);
+        maintainNonDominated(previousSolutions[j], compareSol, counter);
         
         ++j;
       }
-      if(!pruningValues_.empty())
-      {
-        if(!isValidAccordingToPruning(newSolution, counter))
-        {
-          ++i;
-          continue;
-        }
-      }
-      maintainNonDominated(newSolution, compareSol);
+
+      maintainNonDominated(newSolution, compareSol, counter);
       
       ++i;
     }
     
     while(j < previousSolutions.size())
     {
-      if(!pruningValues_.empty())
-      {
-        if(!isValidAccordingToPruning(previousSolutions[j], counter))
-        {
-          ++i;
-          continue;
-        }
-      }
-      
-      maintainNonDominated(previousSolutions[j], compareSol);
+      maintainNonDominated(previousSolutions[j], compareSol, counter);
   
       ++j;
     }
@@ -146,12 +122,12 @@ bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter)
 {
   for (auto pruneSol = pruningValues_[elements_.size() - counter]->rbegin(); pruneSol != pruningValues_[elements_.size() - counter]->rend(); ++pruneSol)
   {
-    if(sol.front() <= pruneSol->front() and sol.back() >= pruneSol->back())
+    if(sol.front() <= pruneSol->front() and sol.front() >= pruneSol->back())
     {
       bool validInRound = true;
-      for (auto i: functionsRestricted_)
+      for (int i = 0; i < functionsRestricted_.size(); ++i)
       {
-        if (sol[i] < pruneSol->at(i))
+        if (sol[functionsRestricted_[i]] < pruneSol->at(i + 1))
         {
           validInRound = false;
           break;
@@ -188,11 +164,19 @@ bool DP::dlex(std::vector<float> &sol1, std::vector<float> &sol2)
   return true;
 }
 
-void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol)
+void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol, int counter)
 {
   bool newSolutionIsGreater = false;
   
   bool dominated = false;
+  
+  if(!pruningValues_.empty())
+  {
+    if(!isValidAccordingToPruning(newSolution, counter))
+    {
+      return;
+    }
+  }
   
   if(compareSol.empty())
   {

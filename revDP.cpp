@@ -56,6 +56,8 @@ std::vector<std::vector<std::vector<float>> *> revDP::run()
     int posOldSolutions = 0; // j
   
     std::list<std::vector<float>*> compareSol;
+  
+    std::list<std::vector<float>> equalWeightStack;
     //init end
     
     weightOfRemainingElements -= element->at(0);
@@ -74,21 +76,35 @@ std::vector<std::vector<std::vector<float>> *> revDP::run()
     
       while (posOldSolutions < numberOfPreviousSolutions and (*previousSolution)[posOldSolutions].front() >= newSolution.front())
       {
-        maintainNonDominated((*previousSolution)[posOldSolutions], compareSol, currentSolution);
+        maintainNonDominated((*previousSolution)[posOldSolutions], compareSol, equalWeightStack, currentSolution);
         ++posOldSolutions;
       }
 
-      maintainNonDominated(newSolution, compareSol, currentSolution);
+      maintainNonDominated(newSolution, compareSol, equalWeightStack, currentSolution);
     
       ++posNewSolutions;
     }
   
     while(posOldSolutions < numberOfPreviousSolutions)
     {
-      maintainNonDominated((*previousSolution)[posOldSolutions], compareSol, currentSolution);
+      maintainNonDominated((*previousSolution)[posOldSolutions], compareSol, equalWeightStack, currentSolution);
     
       ++posOldSolutions;
     }
+    
+    if (!equalWeightStack.empty())
+    {
+      float oldWeight = equalWeightStack.front().front();
+      
+      for (auto &sol: compareSol)
+      {
+        if(sol->front() == oldWeight)
+        {
+          currentSolution->push_back(*sol);
+        }
+      }
+    }
+    
     if(weightOfRemainingElements == 0)
     {
       auto lastEle = currentSolution->back();
@@ -98,19 +114,37 @@ std::vector<std::vector<std::vector<float>> *> revDP::run()
   return pruningValues_;
 }
 
-void revDP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>*> &compareSol, std::vector<std::vector<float>>* currentSolution)
+void revDP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>*> &compareSol, std::list<std::vector<float>> &equalWeightStack, std::vector<std::vector<float>>* currentSolution)
 {
   bool newSolutionIsGood = false;
   
-  bool dominated = false;
-  
   if (compareSol.empty())
   {
-    currentSolution->push_back(newSolution);
+    equalWeightStack.push_back(newSolution);
   
-    compareSol.push_back(&currentSolution->back());
+    compareSol.push_back(&equalWeightStack.back());
     
     return;
+  }
+  
+  if(!equalWeightStack.empty())
+  {
+    float oldWeight = equalWeightStack.front().front();
+  
+    if(newSolution.front() != oldWeight)
+    {
+      for (auto &sol: compareSol)
+      {
+        if(sol->front() == oldWeight)
+        {
+          currentSolution->push_back(*sol);
+        
+          sol = &currentSolution->back();
+        }
+      }
+    
+      equalWeightStack.clear();
+    }
   }
   
   for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
@@ -119,17 +153,16 @@ void revDP::maintainNonDominated(std::vector<float> &newSolution, std::list<std:
     {
       newSolutionIsGood = true;
   
-      currentSolution->push_back(newSolution);
+      equalWeightStack.push_back(newSolution);
       
-      sol = compareSol.insert(sol, &currentSolution->back());
+      sol = compareSol.insert(sol, &equalWeightStack.back());
       
       ++sol;
     }
     
     if(!newSolutionIsGood and dominates(**sol, newSolution))
     {
-      dominated = true;
-      break;
+      return;
     }
     
     if(newSolutionIsGood)
@@ -144,11 +177,11 @@ void revDP::maintainNonDominated(std::vector<float> &newSolution, std::list<std:
     }
   }
   
-  if(!dominated and !newSolutionIsGood)
+  if(!newSolutionIsGood)
   {
-    currentSolution->push_back(newSolution);
+    equalWeightStack.push_back(newSolution);
     
-    compareSol.push_back(&currentSolution->back());
+    compareSol.push_back(&equalWeightStack.back());
   }
 }
 

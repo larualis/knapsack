@@ -52,7 +52,7 @@ private:
   
   bool lex(std::vector<float> &sol1, std::vector<float> &sol2);
   
-  void maintainNonDominated(std::vector<float>& newSolution, std::list<std::vector<float>>& compareSol);
+  void maintainNonDominated(std::vector<float>& newSolution, std::list<std::vector<float>>& compareSol, int counter);
 };
 
 

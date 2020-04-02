@@ -15,13 +15,7 @@ problem::problem(std::string filename, float capacity, int numberOfFunctions,
                  restrictedFunctions_(std::move(restrictedFunctions)),
                  slack_(std::move(slack))
 {
-  readData(filename);
-  
-  sumOfWeights_ = 0;
-  for (auto &ele: elements_)
-  {
-    sumOfWeights_ += ele[0];
-  }
+  initialiaze(filename);
 }
 
 problem::problem(std::string filename, int numberOfFunctions,
@@ -30,14 +24,24 @@ problem::problem(std::string filename, int numberOfFunctions,
     restrictedFunctions_(std::move(restrictedFunctions)),
     slack_(std::move(slack))
 {
+  initialiaze(filename);
+  
+  capacity_ = std::floor(sumOfWeights_ /2);
+}
+
+void problem::initialiaze(std::string& filename)
+{
   readData(filename);
   
   sumOfWeights_ = 0;
   for (auto &ele: elements_)
   {
     sumOfWeights_ += ele[0];
+  
+    elementsWithInformation_.emplace_back(elementsWithOrder(ele));
   }
-  capacity_ = std::floor(sumOfWeights_ /2);
+  
+  orderInformation();
 }
 
 void problem::readData(std::string& filename)
@@ -57,6 +61,116 @@ void problem::readData(std::string& filename)
     elements_.push_back(element);
   }
   file.close();
+}
+
+void problem::orderInformation()
+{
+  std::vector<elementWithValue> orderVector;
+  
+  orderVector.reserve(elements_.size());
+  
+  for (int i = 0; i < numberOfFunctions_; ++i)
+  {
+    for (auto &ele: elementsWithInformation_)
+    {
+      orderVector.emplace_back(elementWithValue(&ele, ele.valueForOrder_[i]));
+    }
+    
+    std::sort(orderVector.rbegin(), orderVector.rend());
+    
+    for( int j = 0; j < orderVector.size(); ++j)
+    {
+      orderVector[j].element->posAccordingToOrder_[i] = j + 1;
+    }
+    orderVector.clear();
+  }
+}
+
+void problem::makeSumOrder()
+{
+  std::vector<elementWithValue> orderVector;
+  
+  orderVector.reserve(elements_.size());
+  
+  elements_.clear();
+  
+  for (auto &ele: elementsWithInformation_)
+  {
+    orderVector.emplace_back(elementWithValue(&ele, ele.sumOfPosOrder()));
+  }
+  
+  std::sort(orderVector.begin(), orderVector.end());
+  
+  for(auto &ele: orderVector)
+  {
+    elements_.push_back(ele.element->element_);
+  }
+}
+
+void problem::makeMaxOrder()
+{
+  std::vector<elementWithValue> orderVector;
+  
+  orderVector.reserve(elements_.size());
+  
+  for (auto &ele: elementsWithInformation_)
+  {
+    float val = ele.posAccordingToOrder_.front();
+    
+    for(auto posVal: ele.posAccordingToOrder_)
+    {
+      if(val < posVal)
+      {
+        val = posVal;
+      }
+    }
+    
+    val += 1/( elements_.size() * numberOfFunctions_) * ele.sumOfPosOrder();
+    
+    orderVector.emplace_back(elementWithValue(&ele, val));
+  }
+  
+  std::sort(orderVector.begin(), orderVector.end());
+  
+  elements_.clear();
+  
+  for(auto &ele: orderVector)
+  {
+    elements_.push_back(ele.element->element_);
+  }
+}
+
+void problem::makeMinOrder()
+{
+  std::vector<elementWithValue> orderVector;
+  
+  orderVector.reserve(elements_.size());
+  
+  for (auto &ele: elementsWithInformation_)
+  {
+    float val = ele.posAccordingToOrder_.front();
+    
+    for(auto posVal: ele.posAccordingToOrder_)
+    {
+      if(val > posVal)
+      {
+        val = posVal;
+      }
+    }
+    
+    val += 1/( elements_.size() * numberOfFunctions_) * ele.sumOfPosOrder();
+    
+    orderVector.emplace_back(elementWithValue(&ele, val));
+  }
+  
+  std::sort(orderVector.begin(), orderVector.end());
+  
+  elements_.clear();
+  
+  for(auto &ele: orderVector)
+  {
+    elements_.push_back(ele.element->element_);
+  }
 }
 
 const std::vector<std::vector<float>> &problem::getElements() const

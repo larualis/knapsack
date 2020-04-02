@@ -51,6 +51,8 @@ void DP::run()
     int i = 0;
     
     int j = 0;
+    
+    int startValue = 0;
   
     std::vector<std::vector<float>> previousSolutions = std::move(solutions_);
     
@@ -74,19 +76,19 @@ void DP::run()
       
       while (j < previousSolutions.size() and lex(previousSolutions[j], newSolution))
       {
-        maintainNonDominated(previousSolutions[j], compareSol, counter);
+        maintainNonDominated(previousSolutions[j], compareSol, counter, startValue);
         
         ++j;
       }
 
-      maintainNonDominated(newSolution, compareSol, counter);
+      maintainNonDominated(newSolution, compareSol, counter, startValue);
       
       ++i;
     }
     
     while(j < previousSolutions.size())
     {
-      maintainNonDominated(previousSolutions[j], compareSol, counter);
+      maintainNonDominated(previousSolutions[j], compareSol, counter, startValue);
   
       ++j;
     }
@@ -100,71 +102,8 @@ void DP::run()
   }
 }
 
-bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool lastElement)
-{
-  if(!lastElement and sol1[0] > sol2[0])
-  {
-    return false;
-  }
-  
-  for (int i = 1; i <= numberOfFunctions_; ++i)
-  {
-    if(sol1[i] < sol2[i])
-    {
-      return false;
-    }
-  }
-  
-  return true;
-}
 
-bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter)
-{
-  for (auto pruneSol = pruningValues_[elements_.size() - counter]->rbegin(); pruneSol != pruningValues_[elements_.size() - counter]->rend(); ++pruneSol)
-  {
-    if(sol.front() <= pruneSol->front() and sol.front() >= pruneSol->back())
-    {
-      bool validInRound = true;
-      for (int i = 0; i < functionsRestricted_.size(); ++i)
-      {
-        if (sol[functionsRestricted_[i]] < pruneSol->at(i + 1))
-        {
-          validInRound = false;
-          break;
-        }
-      }
-      if (validInRound)
-      {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-bool DP::lex(std::vector<float> &sol1, std::vector<float> &sol2)
-{
-  if (sol1[0] < sol2[0])
-  {
-    return true;
-  }
-  
-  return sol1[0] == sol2[0] and dlex(sol1, sol2);
-}
-
-bool DP::dlex(std::vector<float> &sol1, std::vector<float> &sol2)
-{
-  for (int i = 1; i <= numberOfFunctions_; ++i)
-  {
-    if (sol1[i] != sol2[i])
-    {
-      return sol1[i] > sol2[i];
-    }
-  }
-  return true;
-}
-
-void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol, int counter)
+void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol, int counter, int startValue)
 {
   bool newSolutionIsGreater = false;
   
@@ -172,7 +111,7 @@ void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::ve
   
   if(!pruningValues_.empty())
   {
-    if(!isValidAccordingToPruning(newSolution, counter))
+    if(!isValidAccordingToPruning(newSolution, counter, startValue))
     {
       return;
     }
@@ -222,6 +161,82 @@ void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::ve
   
     compareSol.push_back(newSolution);
   }
+}
+
+bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int startValue)
+{
+  bool weightIsGreater = false;
+  
+  for (auto pruneSol = pruningValues_[elements_.size() - counter]->rbegin() + startValue; pruneSol != pruningValues_[elements_.size() - counter]->rend(); ++pruneSol)
+  {
+    if(!weightIsGreater and sol.front() > pruneSol->front())
+    {
+      ++startValue;
+      continue;
+    }
+    else
+    {
+      weightIsGreater = true;
+    }
+    
+    if(sol.front() >= pruneSol->back())
+    {
+      bool validInRound = true;
+      for (int i = 0; i < functionsRestricted_.size(); ++i)
+      {
+        if (sol[functionsRestricted_[i]] < pruneSol->at(i + 1))
+        {
+          validInRound = false;
+          break;
+        }
+      }
+      if (validInRound)
+      {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool lastElement)
+{
+  if(!lastElement and sol1[0] > sol2[0])
+  {
+    return false;
+  }
+  
+  for (int i = 1; i <= numberOfFunctions_; ++i)
+  {
+    if(sol1[i] < sol2[i])
+    {
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+bool DP::lex(std::vector<float> &sol1, std::vector<float> &sol2)
+{
+  if (sol1[0] < sol2[0])
+  {
+    return true;
+  }
+  
+  return sol1[0] == sol2[0] and dlex(sol1, sol2);
+}
+
+bool DP::dlex(std::vector<float> &sol1, std::vector<float> &sol2)
+{
+  for (int i = 1; i <= numberOfFunctions_; ++i)
+  {
+    if (sol1[i] != sol2[i])
+    {
+      return sol1[i] > sol2[i];
+    }
+  }
+  return true;
 }
 
 const std::vector<std::vector<float>> &DP::getSolutions() const

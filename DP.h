@@ -46,13 +46,13 @@ private:
   
   bool dominates(std::vector<float>& sol1, std::vector<float>& sol2, bool lastElement);
   
-  bool isValidAccordingToPruning(std::vector<float> &sol, int counter);
+  bool isValidAccordingToPruning(std::vector<float> &sol, int counter, int starValue);
   
   bool dlex(std::vector<float> &sol1, std::vector<float> &sol2);
   
   bool lex(std::vector<float> &sol1, std::vector<float> &sol2);
   
-  void maintainNonDominated(std::vector<float>& newSolution, std::list<std::vector<float>>& compareSol, int counter);
+  void maintainNonDominated(std::vector<float>& newSolution, std::list<std::vector<float>>& compareSol, int counter, int startValue);
 };
 
 

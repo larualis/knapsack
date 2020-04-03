@@ -7,7 +7,7 @@
 #include "problem.h"
 #include <list>
 
-DP::DP(const problem &Problem, std::vector<std::vector<std::vector<float>>*> pruningValues):
+DP::DP(const problem &Problem, std::vector<std::vector<PruningSolution>*> pruningValues):
     elements_(Problem.getElements()),
     capacity_(Problem.getCapacity()),
     numberOfFunctions_(Problem.getNumberOfFunctions()),
@@ -169,7 +169,7 @@ bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int sta
   
   for (auto pruneSol = pruningValues_[elements_.size() - counter]->rbegin() + startValue; pruneSol != pruningValues_[elements_.size() - counter]->rend(); ++pruneSol)
   {
-    if(!weightIsGreater and sol.front() > pruneSol->front())
+    if(!weightIsGreater and sol.front() > pruneSol->weight_)
     {
       ++startValue;
       continue;
@@ -179,12 +179,12 @@ bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int sta
       weightIsGreater = true;
     }
     
-    if(sol.front() >= pruneSol->back())
+    if(sol.front() >= pruneSol->lowCapacity_)
     {
       bool validInRound = true;
       for (int i = 0; i < functionsRestricted_.size(); ++i)
       {
-        if (sol[functionsRestricted_[i]] < pruneSol->at(i + 1))
+        if (sol[functionsRestricted_[i]] < pruneSol->solutionValues_.at(i + 1))
         {
           validInRound = false;
           break;

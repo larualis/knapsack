@@ -9,6 +9,7 @@
 #include <vector>
 #include <list>
 #include "problem.h"
+#include "revDP.h"
 
 class DP
 {
@@ -31,12 +32,12 @@ public:
 
 private:
   
-  std::vector<std::vector<std::vector<float>>*> pruningValues_;
+  std::vector<std::vector<PruningSolution>*> pruningValues_;
   
 public:
   DP(const problem& Problem, std::vector<int> functionsToCompare);
   
-  DP(const problem &Problem, std::vector<std::vector<std::vector<float>> *> pruningValues);
+  DP(const problem &Problem, std::vector<std::vector<PruningSolution> *> pruningValues);
   
   void run();
   

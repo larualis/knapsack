@@ -9,12 +9,26 @@
 #include <list>
 #include "problem.h"
 
-enum class interval : int
+struct PruningSolution
 {
-  disjunct,
-  capacityLower,
-  capacityHigher,
-  capacityEqual
+  std::vector<float> solutionValues_;
+  
+  float weight_;
+  
+  float lowCapacity_;
+  
+  int relevantRounds_;
+  
+  explicit PruningSolution(std::vector<float> solution)
+  {
+    solutionValues_ = std::move(solution);
+  
+    weight_ = solutionValues_.front();
+    
+    lowCapacity_ = 0;
+  
+    relevantRounds_ = 0;
+  }
 };
 
 class revDP
@@ -29,20 +43,20 @@ private:
   
   std::vector<int> functionSubset_;
   
-  std::vector<std::vector<std::vector<float> >* > pruningValues_;
+  std::vector<std::vector<PruningSolution>* > pruningValues_;
 public:
   
   revDP(const problem& Problem, std::vector<float> baseValues);
   
-  std::vector<std::vector<std::vector<float>> *> run();
+  std::vector<std::vector<PruningSolution> *> run();
 private:
   
   bool dominates(std::vector<float>& sol1, std::vector<float>& sol2);
   
   bool dlex(std::vector<float> &sol1, std::vector<float> &sol2);
   
-  void maintainNonDominated(std::vector<float> &newSolution, std::list<std::vector<float> *> &compareSol, std::list<std::vector<float>> &equalWeightStack,
-                            std::vector<std::vector<float>> *currentSolution);
+  void maintainNonDominated(PruningSolution &newSolution, int oldPos, std::list<PruningSolution *> &compareSol, std::list<PruningSolution> &equalWeightStack,
+                            std::vector<PruningSolution> *currentSolution);
 };
 
 

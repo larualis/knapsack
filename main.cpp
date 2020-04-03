@@ -68,7 +68,7 @@ void advancedPruning(problem &Problem)
     printVector<float>(sol);
   }
   
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
   
   std::cout <<"Took: " << duration <<"\n";
   
@@ -95,7 +95,7 @@ void standartDP(problem &Problem, std::vector<int> functionsToCompare)
   {
     printVector<float>(sol);
   }
-  auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
   
   std::cout <<"Took: " << duration <<"\n";
   
@@ -224,11 +224,13 @@ int main(int argc, char **argv)
   //!input
   std::vector<int> restrictedFunctions {1,2};
   
-  std::vector<float> slack {0.9, 0.9};
+  std::vector<float> slack {0.9,0.9};
   
   std::string data = "../python/knapsack.txt";
   
   problem Problem(data, 3, restrictedFunctions, slack);
+  
+  Problem.makeMaxOrder();
   
   switch (std::stoi(argv[1]))
   {
@@ -246,6 +248,8 @@ int main(int argc, char **argv)
       }
     case 1:
       {
+        Problem.reverseElements();
+        
         advancedPruning(Problem);
         break;
       }

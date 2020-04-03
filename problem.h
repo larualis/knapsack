@@ -105,6 +105,8 @@ public:
   
   void orderInformation();
   
+  void reverseElements();
+  
   void makeSumOrder();
   
   void makeMaxOrder();

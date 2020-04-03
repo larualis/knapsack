@@ -202,3 +202,8 @@ float problem::getSumOfWeights() const
 {
   return sumOfWeights_;
 }
+
+void problem::reverseElements()
+{
+  reverse(elements_.begin(),elements_.end());
+}

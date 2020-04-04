@@ -27,7 +27,7 @@ struct PruningSolution
     
     lowCapacity_ = 0;
   
-    relevantRounds_ = 0;
+    relevantRounds_ = -1;
   }
 };
 
@@ -55,7 +55,7 @@ private:
   
   bool dlex(std::vector<float> &sol1, std::vector<float> &sol2);
   
-  void maintainNonDominated(PruningSolution &newSolution, int oldPos, std::list<PruningSolution *> &compareSol, std::list<PruningSolution> &equalWeightStack,
+  void maintainNonDominated(PruningSolution &newSolution, std::list<PruningSolution *> &compareSol, std::list<PruningSolution> &equalWeightStack,
                             std::vector<PruningSolution> *currentSolution);
 };
 

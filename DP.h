@@ -26,6 +26,8 @@ private:
   
   std::vector<std::vector<float>> solutions_;
   
+  std::vector<int> validRounds_;
+  
   std::list<std::vector<float>> finalSol;
 public:
   const std::list<std::vector<float>> &getFinalSol() const;
@@ -47,13 +49,13 @@ private:
   
   bool dominates(std::vector<float>& sol1, std::vector<float>& sol2, bool lastElement);
   
-  bool isValidAccordingToPruning(std::vector<float> &sol, int counter, int starValue);
+  bool isValidAccordingToPruning(std::vector<float> &sol, int counter, int starValue, int &validForRounds);
   
   bool dlex(std::vector<float> &sol1, std::vector<float> &sol2);
   
   bool lex(std::vector<float> &sol1, std::vector<float> &sol2);
   
-  void maintainNonDominated(std::vector<float>& newSolution, std::list<std::vector<float>>& compareSol, int counter, int startValue);
+  void maintainNonDominated(std::vector<float>& newSolution, int validRound, std::list<std::vector<float>>& compareSol, int counter, int startValue);
 };
 
 

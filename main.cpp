@@ -224,7 +224,7 @@ int main(int argc, char **argv)
   //!input
   std::vector<int> restrictedFunctions {1,2};
   
-  std::vector<float> slack {0.9,0.9};
+  std::vector<float> slack {0.95,0.8};
   
   std::string data = "../python/knapsack.txt";
   

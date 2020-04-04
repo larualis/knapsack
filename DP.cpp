@@ -15,6 +15,7 @@ DP::DP(const problem &Problem, std::vector<std::vector<PruningSolution>*> prunin
     pruningValues_(pruningValues)
 {
   solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
+  validRounds_.push_back(0);
   functionsToCompare_.reserve(numberOfFunctions_);
   for(int i = 1; i <= numberOfFunctions_; ++i)
   {
@@ -29,6 +30,7 @@ DP::DP(const problem &Problem, std::vector<int> functionsToCompare):
     functionsToCompare_(functionsToCompare)
 {
   solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
+  validRounds_.push_back(0);
 }
 
 void DP::run()
@@ -56,6 +58,8 @@ void DP::run()
   
     std::vector<std::vector<float>> previousSolutions = std::move(solutions_);
     
+    std::vector<int> validPreviousRounds = std::move(validRounds_);
+    
     std::list<std::vector<float>> compareSol;
     
     while (j < previousSolutions.size() and previousSolutions[j][0] + weightOfRemainingElements <= capacity_)
@@ -76,19 +80,19 @@ void DP::run()
       
       while (j < previousSolutions.size() and lex(previousSolutions[j], newSolution))
       {
-        maintainNonDominated(previousSolutions[j], compareSol, counter, startValue);
+        maintainNonDominated(previousSolutions[j], validPreviousRounds[j], compareSol, counter, startValue);
         
         ++j;
       }
 
-      maintainNonDominated(newSolution, compareSol, counter, startValue);
+      maintainNonDominated(newSolution, 0, compareSol, counter, startValue);
       
       ++i;
     }
     
     while(j < previousSolutions.size())
     {
-      maintainNonDominated(previousSolutions[j], compareSol, counter, startValue);
+      maintainNonDominated(previousSolutions[j], validPreviousRounds[j], compareSol, counter, startValue);
   
       ++j;
     }
@@ -103,23 +107,34 @@ void DP::run()
 }
 
 
-void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol, int counter, int startValue)
+void DP::maintainNonDominated(std::vector<float> &newSolution, int validRound, std::list<std::vector<float>> &compareSol, int counter, int startValue)
 {
   bool newSolutionIsGreater = false;
   
   bool dominated = false;
   
+  int validRoundsForNewSolution = 0;
+  
   if(!pruningValues_.empty())
   {
-    if(!isValidAccordingToPruning(newSolution, counter, startValue))
+    if (validRound < 1)
     {
-      return;
+      if (!isValidAccordingToPruning(newSolution, counter, startValue, validRoundsForNewSolution))
+      {
+        return;
+      }
+    }
+    else
+    {
+      validRoundsForNewSolution = validRound - 1;
     }
   }
   
   if(compareSol.empty())
   {
     solutions_.push_back(newSolution);
+    
+    validRounds_.push_back(validRoundsForNewSolution);
   
     compareSol.push_back(newSolution);
     
@@ -133,6 +148,8 @@ void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::ve
       newSolutionIsGreater = true;
       
       solutions_.push_back(newSolution);
+  
+      validRounds_.push_back(validRoundsForNewSolution);
       
       sol = compareSol.insert(sol, newSolution);
       
@@ -159,11 +176,13 @@ void DP::maintainNonDominated(std::vector<float> &newSolution, std::list<std::ve
   {
     solutions_.push_back(newSolution);
   
+    validRounds_.push_back(validRoundsForNewSolution);
+  
     compareSol.push_back(newSolution);
   }
 }
 
-bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int startValue)
+bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int startValue, int &validForRounds)
 {
   bool weightIsGreater = false;
   
@@ -192,6 +211,7 @@ bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int sta
       }
       if (validInRound)
       {
+        validForRounds = pruneSol->relevantRounds_;
         return true;
       }
     }

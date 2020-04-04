@@ -1,6 +1,6 @@
 import random
 
-numberOfElements = 70
+numberOfElements = 90
 numberOfFunctions = 3
 maxValue = 1000
 

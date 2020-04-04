@@ -76,18 +76,18 @@ std::vector<std::vector<PruningSolution> *> revDP::run()
     
       while (posOldSolutions < numberOfPreviousSolutions and (*previousSolution)[posOldSolutions].weight_ >= newSolution.weight_)
       {
-        maintainNonDominated((*previousSolution)[posOldSolutions], posOldSolutions, compareSol, equalWeightStack, currentSolution);
+        maintainNonDominated((*previousSolution)[posOldSolutions], compareSol, equalWeightStack, currentSolution);
         ++posOldSolutions;
       }
 
-      maintainNonDominated(newSolution,-1, compareSol, equalWeightStack, currentSolution);
+      maintainNonDominated(newSolution, compareSol, equalWeightStack, currentSolution);
     
       ++posNewSolutions;
     }
   
     while(posOldSolutions < numberOfPreviousSolutions)
     {
-      maintainNonDominated((*previousSolution)[posOldSolutions], posOldSolutions, compareSol, equalWeightStack, currentSolution);
+      maintainNonDominated((*previousSolution)[posOldSolutions], compareSol, equalWeightStack, currentSolution);
     
       ++posOldSolutions;
     }
@@ -115,7 +115,7 @@ std::vector<std::vector<PruningSolution> *> revDP::run()
   return pruningValues_;
 }
 
-void revDP::maintainNonDominated(PruningSolution &newSolution, int oldPos, std::list<PruningSolution*> &compareSol, std::list<PruningSolution> &equalWeightStack, std::vector<PruningSolution>* currentSolution)
+void revDP::maintainNonDominated(PruningSolution &newSolution, std::list<PruningSolution*> &compareSol, std::list<PruningSolution> &equalWeightStack, std::vector<PruningSolution>* currentSolution)
 {
   bool newSolutionIsGood = false;
   
@@ -153,6 +153,8 @@ void revDP::maintainNonDominated(PruningSolution &newSolution, int oldPos, std::
     if(!newSolutionIsGood and !dlex((**sol).solutionValues_, newSolution.solutionValues_))
     {
       newSolutionIsGood = true;
+      
+      newSolution.relevantRounds_ += 1;
   
       equalWeightStack.push_back(newSolution);
       

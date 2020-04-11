@@ -6,13 +6,15 @@
 #include "DP.h"
 #include "problem.h"
 #include <list>
+#include <cmath>
 
 DP::DP(const problem &Problem, std::vector<std::vector<PruningSolution>*> pruningValues):
     elements_(Problem.getElements()),
+    elementsWithInformation_(Problem.getElementsWithInformation()),
     capacity_(Problem.getCapacity()),
     numberOfFunctions_(Problem.getNumberOfFunctions()),
     functionsRestricted_(Problem.getRestrictedFunctions()),
-    pruningValues_(pruningValues)
+    pruningValues_(std::move(pruningValues))
 {
   solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
   validRounds_.push_back(0);
@@ -25,6 +27,7 @@ DP::DP(const problem &Problem, std::vector<std::vector<PruningSolution>*> prunin
 
 DP::DP(const problem &Problem, std::vector<int> functionsToCompare):
     elements_(Problem.getElements()),
+    elementsWithInformation_(Problem.getElementsWithInformation()),
     capacity_(Problem.getCapacity()),
     numberOfFunctions_(functionsToCompare.size()),
     functionsToCompare_(functionsToCompare)
@@ -103,6 +106,139 @@ void DP::run()
     {
       finalSol = std::move(compareSol);
     }
+    else
+    {
+      //! sort remaining elements
+      std::vector<elementWithValue> maxOrder;
+  
+      maxOrder.reserve(elements_.size() - counter);
+      
+      std::vector<elementWithValue> sumOrder = maxOrder;//todo: element with value should use direct value and not pointer
+  
+      std::vector<int> comparePos = elementsWithInformation_[counter - 1].posAccordingToOrder_;
+  
+      for(auto ele = elementsWithInformation_.begin() + counter; ele != elementsWithInformation_.end(); ++ele)
+      {
+        for (int h = 0; h < comparePos.size(); ++h)
+        {
+          if (comparePos[h] < ele->posAccordingToOrder_[h])
+          {
+            --ele->posAccordingToOrder_[h];
+          }
+        }
+        
+        float sum = 0;
+        
+        for (auto h : functionsToCompare_)
+        {
+          sum += ele->posAccordingToOrder_[h - 1];
+        }
+        
+        sumOrder.emplace_back(&(*ele), sum);
+  
+        float val = 0;
+        
+        for (auto h : functionsToCompare_)
+        {
+          if(val < ele->posAccordingToOrder_[h - 1])
+          {
+            val = ele->posAccordingToOrder_[h - 1];
+          }
+        }
+  
+        val += 1 / ( elements_.size() * numberOfFunctions_) * sum;
+        
+        maxOrder.emplace_back(&(*ele), val);
+      }
+      
+      std::sort(sumOrder.begin(), sumOrder.end());
+      
+      std::sort(maxOrder.begin(), maxOrder.end());
+      
+      //!generate set F from paper
+      std::list<std::vector<float>> compareSolF;
+      
+      for (auto sol: compareSol)
+      {
+        for (auto &ele : sumOrder)
+        {
+          if(sol.front() + ele.element->element_.front() <= capacity_)
+          {
+            sol.front() += ele.element->element_.front();
+            
+            for (int idx = 1; idx <= numberOfFunctions_; ++idx)
+            {
+              sol[idx] += ele.element->element_[functionsToCompare_[idx - 1]];
+            }
+          }
+        }
+        keepNonDominated(sol, compareSolF);
+      }
+  
+      for (auto sol: compareSol)
+      {
+        for (auto &ele : maxOrder)
+        {
+          if(sol.front() + ele.element->element_.front() <= capacity_)
+          {
+            sol.front() += ele.element->element_.front();
+        
+            for (int idx = 1; idx <= numberOfFunctions_; ++idx)
+            {
+              sol[idx] += ele.element->element_[functionsToCompare_[idx - 1]];
+            }
+          }
+        }
+        keepNonDominated(sol, compareSolF);
+      }
+      
+      //!remove solutions according to upper bound rule
+      int numberOfElementsToRemove = 0;
+      
+      for (auto &sol: solutions_)
+      {
+        std::vector<float> upperBoundOfSol = upperBound(sol, sumOrder);
+  
+        std::vector<float> b = upperBound(sol, maxOrder);
+        
+        for(int idx = 1; idx < upperBoundOfSol.size(); ++idx)
+        {
+          if (upperBoundOfSol[idx] < b[idx])
+          {
+            upperBoundOfSol[idx] = b[idx];
+          }
+        }
+        
+        bool remove = false;
+        
+        for (auto &compSol : compareSolF)
+        {
+          if (dlex(compSol, upperBoundOfSol))
+          {
+            if(dominates(compSol, upperBoundOfSol, true))
+            {
+              remove = true;
+              break;
+            }
+          }
+          else
+          {
+           break;
+          }
+        }
+        
+        if(remove)
+        {
+          ++numberOfElementsToRemove;
+        }
+        else
+        {
+          break;
+        }
+      }
+      
+      solutions_.erase(solutions_.begin(), solutions_.begin() + numberOfElementsToRemove);
+    }
   }
 }
 
@@ -180,6 +316,119 @@ void DP::maintainNonDominated(std::vector<float> &newSolution, int validRound, s
   
     compareSol.push_back(newSolution);
   }
+}
+
+void DP::keepNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol)
+{
+  bool newSolutionIsGreater = false;
+  
+  bool dominated = false;
+  
+  if(compareSol.empty())
+  {
+    compareSol.push_back(newSolution);
+    
+    return;
+  }
+  
+  for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
+  {
+    if(!newSolutionIsGreater and !dlex(*sol, newSolution))
+    {
+      newSolutionIsGreater = true;
+      
+      sol = compareSol.insert(sol, newSolution);
+      
+      ++sol;
+    }
+    
+    if(!newSolutionIsGreater and dominates(*sol, newSolution, true))
+    {
+      dominated = true;
+      break;
+    }
+    
+    if(newSolutionIsGreater)
+    {
+      if(dominates(newSolution, *sol, true))
+      {
+        sol = compareSol.erase(sol);
+        --sol;
+      }
+    }
+  }
+  
+  if(!dominated and !newSolutionIsGreater)
+  {
+    compareSol.push_back(newSolution);
+  }
+}
+
+std::vector<float> DP::upperBound(std::vector<float> &sol, std::vector<elementWithValue> &elementsSorted)
+{//todo: das muss sortiert werden nach den einzelnen ordnungen der funktionswerte, vorschlag ändere das Speichern von elementen
+  std::vector<float> rval = sol;
+  
+  int remainingCapacity = capacity_ - sol.front();
+  
+  int numberOfRemainingElements = elementsSorted.size();
+  
+  int i = -1; //c_i reflects in for loop the last element added
+  
+  bool capacityWasReached = false;
+  
+  for (auto &ele: elementsSorted)
+  {
+    remainingCapacity -= ele.element->element_.front();
+    
+    if(remainingCapacity < 0)
+    {
+      remainingCapacity += ele.element->element_.front();
+  
+      capacityWasReached = true;
+      
+      ++i;
+      
+      break;
+    }
+    
+    std::transform (rval.begin(), rval.end(), ele.element->element_.begin(), rval.begin(), std::plus<float>());
+  
+    ++i;
+  }
+  
+  if (!capacityWasReached)
+  {
+    return rval;
+  }
+  
+  std::vector<float> prevEle = elementsSorted[i - 1].element->element_;
+  
+  std::vector<float> ele = elementsSorted[i].element->element_;
+  
+  if(i != numberOfRemainingElements - 1)
+  {
+    std::vector<float> nextEle = elementsSorted[i + 1].element->element_;
+    
+    for(int j = 1; j < ele.size(); ++j)
+    {
+      int a = std::floor(remainingCapacity * nextEle[j]/nextEle[0]);//todo: divison have already been done, can take direct value
+    
+      int b = std::floor(ele[j] - (ele[0] - remainingCapacity) * prevEle[j]/prevEle[0]);
+    
+      int max = a > b ? a : b;
+    
+      rval[j] += max;
+    }
+  }
+  else
+  {//! if last element doesn't fit, then use upper bound by adding residual capacity of current element
+    for(int j = 1; j < ele.size(); ++j)
+    {
+      rval[j] += std::floor(remainingCapacity * ele[j]/ele[0]);//todo: divison have already been done, can take direct value
+    }
+  }
+  
+  return rval;
 }
 
 bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int startValue, int &validForRounds)

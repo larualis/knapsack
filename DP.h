@@ -15,7 +15,9 @@ class DP
 {
 private:
   const std::vector<std::vector<float>>& elements_;
- 
+  
+  std::vector<elementsWithOrder> elementsWithInformation_;
+  
   float capacity_;
  
   int numberOfFunctions_;
@@ -56,6 +58,10 @@ private:
   bool lex(std::vector<float> &sol1, std::vector<float> &sol2);
   
   void maintainNonDominated(std::vector<float>& newSolution, int validRound, std::list<std::vector<float>>& compareSol, int counter, int startValue);
+  
+  void keepNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol);
+  
+  std::vector<float> upperBound(std::vector<float> &sol, std::vector<elementWithValue> &elementsSorted);
 };
 
 

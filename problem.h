@@ -89,7 +89,9 @@ public:
   const std::vector<int> &getRestrictedFunctions() const;
   
   const std::vector<std::vector<float>> &getElements() const;
-
+  
+  const std::vector<elementsWithOrder> &getElementsWithInformation() const;
+  
   const std::vector<float> &getSlack() const;
 
 private:

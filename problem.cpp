@@ -101,10 +101,16 @@ void problem::makeSumOrder()
   
   std::sort(orderVector.begin(), orderVector.end());
   
+  std::vector<elementsWithOrder> sortedElementsWithOrder;
+  
   for(auto &ele: orderVector)
   {
     elements_.push_back(ele.element->element_);
+    
+    sortedElementsWithOrder.push_back(*ele.element);
   }
+  
+  elementsWithInformation_ = std::move(sortedElementsWithOrder);
 }
 
 void problem::makeMaxOrder()
@@ -134,10 +140,16 @@ void problem::makeMaxOrder()
   
   elements_.clear();
   
+  std::vector<elementsWithOrder> sortedElementsWithOrder;
+  
   for(auto &ele: orderVector)
   {
     elements_.push_back(ele.element->element_);
+    
+    sortedElementsWithOrder.push_back(*ele.element);
   }
+  
+  elementsWithInformation_ = std::move(sortedElementsWithOrder);
 }
 
 void problem::makeMinOrder()
@@ -167,10 +179,23 @@ void problem::makeMinOrder()
   
   elements_.clear();
   
+  std::vector<elementsWithOrder> sortedElementsWithOrder;
+  
   for(auto &ele: orderVector)
   {
     elements_.push_back(ele.element->element_);
+    
+    sortedElementsWithOrder.push_back(*ele.element);
   }
+  
+  elementsWithInformation_ = std::move(sortedElementsWithOrder);
+}
+
+void problem::reverseElements()
+{
+  reverse(elements_.begin(),elements_.end());
+  
+  reverse(elementsWithInformation_.begin(), elementsWithInformation_.end());
 }
 
 const std::vector<std::vector<float>> &problem::getElements() const
@@ -203,7 +228,8 @@ float problem::getSumOfWeights() const
   return sumOfWeights_;
 }
 
-void problem::reverseElements()
+
+const std::vector<elementsWithOrder> &problem::getElementsWithInformation() const
 {
-  reverse(elements_.begin(),elements_.end());
+  return elementsWithInformation_;
 }

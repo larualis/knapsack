@@ -2,35 +2,37 @@
 // Created by rick on 13.03.20.
 //
 
-#include "problem.h"
+#include "Problem.h"
 
 #include <cmath>
 #include <utility>
 #include <cmath>
 #include <sstream>
 
-problem::problem(std::string filename, float capacity, int numberOfFunctions,
+Problem::Problem(std::string filename, float capacity, int numberOfFunctions,
                  std::vector<int> restrictedFunctions, std::vector<float> slack):
                  capacity_(capacity),
-                 numberOfFunctions_(numberOfFunctions),
                  restrictedFunctions_(std::move(restrictedFunctions)),
                  slack_(std::move(slack))
 {
   initialiaze(filename);
+  
+  eleManager_ = ElementManager(elements_, elements_.size(), numberOfFunctions_);
 }
 
-problem::problem(std::string filename, int numberOfFunctions,
+Problem::Problem(std::string filename, int numberOfFunctions,
                  std::vector<int> restrictedFunctions, std::vector<float> slack):
-    numberOfFunctions_(numberOfFunctions),
     restrictedFunctions_(std::move(restrictedFunctions)),
     slack_(std::move(slack))
 {
   initialiaze(filename);
   
   capacity_ = std::floor(sumOfWeights_ /2);
+  
+  eleManager_ = ElementManager(elements_, elements_.size(), numberOfFunctions_);
 }
 
-void problem::initialiaze(std::string& filename)
+void Problem::initialiaze(std::string& filename)
 {
   readData(filename);
   
@@ -45,7 +47,7 @@ void problem::initialiaze(std::string& filename)
   orderInformation();
 }
 
-void problem::readData(std::string& filename)
+void Problem::readData(std::string& filename)
 {
   std::ifstream file;
   
@@ -74,7 +76,7 @@ void problem::readData(std::string& filename)
   file.close();
 }
 
-void problem::orderInformation()
+void Problem::orderInformation()
 {
   std::vector<elementWithValue> orderVector;
   
@@ -97,7 +99,7 @@ void problem::orderInformation()
   }
 }
 
-void problem::makeSumOrder()
+void Problem::makeSumOrder()
 {
   std::vector<elementWithValue> orderVector;
   
@@ -124,8 +126,10 @@ void problem::makeSumOrder()
   elementsWithInformation_ = std::move(sortedElementsWithOrder);
 }
 
-void problem::makeMaxOrder()
+void Problem::makeMaxOrder()
 {
+  eleManager_.makeMaxOrder();
+  
   std::vector<elementWithValue> orderVector;
   
   orderVector.reserve(elements_.size());
@@ -163,7 +167,7 @@ void problem::makeMaxOrder()
   elementsWithInformation_ = std::move(sortedElementsWithOrder);
 }
 
-void problem::makeMinOrder()
+void Problem::makeMinOrder()
 {
   std::vector<elementWithValue> orderVector;
   
@@ -202,45 +206,51 @@ void problem::makeMinOrder()
   elementsWithInformation_ = std::move(sortedElementsWithOrder);
 }
 
-void problem::reverseElements()
+void Problem::reverseElements()
 {
   reverse(elements_.begin(),elements_.end());
   
   reverse(elementsWithInformation_.begin(), elementsWithInformation_.end());
+  
+  eleManager_.reverseElements();
 }
 
-const std::vector<std::vector<float>> &problem::getElements() const
+const std::vector<std::vector<float>> &Problem::getElements() const
 {
   return elements_;
 }
 
-float problem::getCapacity() const
+float Problem::getCapacity() const
 {
   return capacity_;
 }
 
-int problem::getNumberOfFunctions() const
+int Problem::getNumberOfFunctions() const
 {
   return numberOfFunctions_;
 }
 
-const std::vector<int> &problem::getRestrictedFunctions() const
+const std::vector<int> &Problem::getRestrictedFunctions() const
 {
   return restrictedFunctions_;
 }
 
-const std::vector<float> &problem::getSlack() const
+const std::vector<float> &Problem::getSlack() const
 {
   return slack_;
 }
 
-float problem::getSumOfWeights() const
+float Problem::getSumOfWeights() const
 {
   return sumOfWeights_;
 }
 
-
-const std::vector<elementsWithOrder> &problem::getElementsWithInformation() const
+const std::vector<elementsWithOrder> &Problem::getElementsWithInformation() const
 {
   return elementsWithInformation_;
+}
+
+const ElementManager &Problem::getEleManager() const
+{
+  return eleManager_;
 }

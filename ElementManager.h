@@ -23,10 +23,9 @@ struct element
   
   explicit element(std::vector<float>& rawElement):
       weight_(rawElement.front()),
-      SumOfposOrderValueWeightRatio_(0)
+      SumOfposOrderValueWeightRatio_(0),
+      values_(rawElement.begin() + 1, rawElement.end())
   {
-    std::copy(rawElement.begin() + 1, rawElement.end(), values_.begin());
-  
     posOrderValueWeightRatio_.resize(values_.size());
   
     valueWeightRatios_.reserve(values_.size());
@@ -70,7 +69,11 @@ private:
 public:
   ElementManager(std::vector<std::vector<float>> rawElements, int numberOfElements, int numberOfFunctions);
   
+  ElementManager() {};
+  
   void generateOrder();
+  
+  void removeElementFromOrder(int elementNumber);
   
   void reverseElements();
   
@@ -80,6 +83,14 @@ public:
   
   void makeMinOrder();
   
+  const std::vector<std::vector<std::vector<float>>> &getOrderedRawElementsValue() const;
+  
+  const std::vector<std::vector<element *>> &getOrderedRawElementsPointer() const;
+  
+  std::vector<element> &getElements();
+  
+  int getNumberOfElements() const;
+
 private:
   
   void updateOrderedRawElementsPointer_();

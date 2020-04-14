@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 #include <algorithm>
+#include "ElementManager.h"
 
 struct elementsWithOrder
 {
@@ -59,7 +60,7 @@ struct elementWithValue
   }
 };
 
-class problem
+class Problem
 {
 private:
   
@@ -68,12 +69,16 @@ private:
   int numberOfFunctions_;
   
   float sumOfWeights_;
-
-private:
   
   std::vector<int> restrictedFunctions_;
   
   std::vector<float> slack_;
+  
+  ElementManager eleManager_;
+public:
+  const ElementManager &getEleManager() const;
+
+private:
   
   std::vector<elementsWithOrder> elementsWithInformation_;
   
@@ -101,9 +106,9 @@ private:
   void initialiaze(std::string& filename);
 
 public:
-  problem(std::string filename, float capacity, int numberOfFunctions,  std::vector<int> restrictedFunctions, std::vector<float> slack);
+  Problem(std::string filename, float capacity, int numberOfFunctions, std::vector<int> restrictedFunctions, std::vector<float> slack);
   
-  problem(std::string filename, int numberOfFunctions, std::vector<int> restrictedFunctions, std::vector<float> slack);
+  Problem(std::string filename, int numberOfFunctions, std::vector<int> restrictedFunctions, std::vector<float> slack);
   
   void orderInformation();
   

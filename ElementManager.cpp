@@ -59,7 +59,7 @@ void ElementManager::generateOrder()
       
       rawElement.push_back(ele.weight_);
       
-      std::copy(ele.values_.begin(), ele.values_.end(), rawElement.begin() + 1);
+      rawElement.insert(rawElement.end(), ele.values_.begin(), ele.values_.end());
       
       rawElements[ele.posOrderValueWeightRatio_[i] - 1] = rawElement;
     }
@@ -194,9 +194,60 @@ void ElementManager::updateOrderedRawElementsPointer_()
   }
 }
 
+void ElementManager::removeElementFromOrder(int elementNumber)
+{
+  std::vector<int> posOfElementToRemove = elements_[elementNumber - 1].posOrderValueWeightRatio_;
+  
+  for(int i = 0; i < numberOfFunctions_; ++i)
+  {
+    orderedRawElementsValue_[i].erase(orderedRawElementsValue_[i].begin() + posOfElementToRemove[i] - 1);
+  }
+  /*
+  for(int i = 0; i < numberOfFunctions_; ++i)
+  {
+    orderedRawElementsPointer_[i].erase(orderedRawElementsPointer_[i].begin() + posOfElementToRemove[i] - 1);
+  }
+   */
+  
+  for(auto ele = elements_.begin() + elementNumber; ele != elements_.end(); ++ele)
+  {
+    for (int i = 0; i < posOfElementToRemove.size(); ++i)
+    {
+      if(posOfElementToRemove[i] < ele->posOrderValueWeightRatio_[i])
+      {
+        --ele->posOrderValueWeightRatio_[i];
+        
+        --ele->SumOfposOrderValueWeightRatio_;
+      }
+    }
+  }
+  
+  
+}
+
 void ElementManager::reverseElements()
 {
   reverse(elements_.begin(),elements_.end());
   
   updateOrderedRawElementsPointer_();
+}
+
+std::vector<element> &ElementManager::getElements()
+{
+  return elements_;
+}
+
+const std::vector<std::vector<element *>> &ElementManager::getOrderedRawElementsPointer() const
+{
+  return orderedRawElementsPointer_;
+}
+
+const std::vector<std::vector<std::vector<float>>> &ElementManager::getOrderedRawElementsValue() const
+{
+  return orderedRawElementsValue_;
+}
+
+int ElementManager::getNumberOfElements() const
+{
+  return numberOfElements_;
 }

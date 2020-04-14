@@ -4,7 +4,7 @@
 #include <chrono>
 #include <cmath>
 #include "DP.h"
-#include "problem.h"
+#include "Problem.h"
 #include "revDP.h"
 
 template <class x>
@@ -17,7 +17,7 @@ void printVector(std::vector<x> vec)
   std::cout << std::endl;
 }
 
-void advancedPruning(problem &Problem)
+void advancedPruning(Problem &Problem)
 {
   //! restricted DP and data extraction
   auto t1 = std::chrono::high_resolution_clock::now();
@@ -80,7 +80,7 @@ void advancedPruning(problem &Problem)
   }
 }
 
-void standartDP(problem &Problem, std::vector<int> functionsToCompare)
+void standartDP(Problem &Problem, std::vector<int> functionsToCompare)
 {
   DP dp(Problem, functionsToCompare);
   
@@ -102,7 +102,7 @@ void standartDP(problem &Problem, std::vector<int> functionsToCompare)
   std::cout <<"found Solutions: " << finaleSolution.size() <<"\n";
 }
 
-void checkCorrectness(problem &Problem)
+void checkCorrectness(Problem &Problem)
 {
   //! restricted DP and data extraction
   std::vector<float> minimalFunctionValues(Problem.getRestrictedFunctions().size(), 0);
@@ -228,34 +228,34 @@ int main(int argc, char **argv)
   
   std::string data = "../python/knapsack.txt";
   
-  problem Problem(data, 3, restrictedFunctions, slack);
+  Problem problem(data, 3, restrictedFunctions, slack);
   
-  Problem.makeMaxOrder();
+  problem.makeMaxOrder();
   
   switch (std::stoi(argv[1]))
   {
     case 0:
       {
-        std::vector<int> functionsToCompare(Problem.getNumberOfFunctions(), 0);
+        std::vector<int> functionsToCompare(problem.getNumberOfFunctions(), 0);
   
-        for (int i = 0; i < Problem.getNumberOfFunctions(); ++i)
+        for (int i = 0; i < problem.getNumberOfFunctions(); ++i)
         {
           functionsToCompare[i] = i + 1;
         }
   
-        standartDP(Problem, functionsToCompare);
+        standartDP(problem, functionsToCompare);
         break;
       }
     case 1:
       {
-        Problem.reverseElements();
+        problem.reverseElements();
         
-        advancedPruning(Problem);
+        advancedPruning(problem);
         break;
       }
     case 2:
     {
-      checkCorrectness(Problem);
+      checkCorrectness(problem);
       break;
     }
     default:

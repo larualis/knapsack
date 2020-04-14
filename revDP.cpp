@@ -6,11 +6,11 @@
 #include <iostream>
 #include "revDP.h"
 
-revDP::revDP(const problem& Problem, std::vector<float> baseValues):
-  elements_(Problem.getElements()),
-  capacity_(Problem.getCapacity()),
-  functionSubset_(Problem.getRestrictedFunctions()),
-  numberOfFunctions_(Problem.getRestrictedFunctions().size())
+revDP::revDP(const Problem& problem, std::vector<float> baseValues):
+  elements_(problem.getElements()),
+  capacity_(problem.getCapacity()),
+  functionSubset_(problem.getRestrictedFunctions()),
+  numberOfFunctions_(problem.getRestrictedFunctions().size())
   {
     baseValues.emplace(baseValues.begin(), capacity_);
     

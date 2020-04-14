@@ -8,15 +8,15 @@
 
 #include <vector>
 #include <list>
-#include "problem.h"
+#include "Problem.h"
 #include "revDP.h"
 
 class DP
 {
 private:
-  const std::vector<std::vector<float>>& elements_;
+  const Problem& problem_;
   
-  std::vector<elementsWithOrder> elementsWithInformation_;
+  ElementManager elementManager_;
   
   float capacity_;
  
@@ -39,9 +39,9 @@ private:
   std::vector<std::vector<PruningSolution>*> pruningValues_;
   
 public:
-  DP(const problem& Problem, std::vector<int> functionsToCompare);
+  DP(const Problem& problem, std::vector<int> functionsToCompare);
   
-  DP(const problem &Problem, std::vector<std::vector<PruningSolution> *> pruningValues);
+  DP(const Problem &problem, std::vector<std::vector<PruningSolution> *> pruningValues);
   
   void run();
   
@@ -61,7 +61,7 @@ private:
   
   void keepNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol);
   
-  std::vector<float> upperBound(std::vector<float> &sol, std::vector<elementWithValue> &elementsSorted);
+  std::vector<float> upperBound(std::vector<float> &sol);
 };
 
 

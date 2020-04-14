@@ -4,16 +4,16 @@
 
 #include <iostream>
 #include "DP.h"
-#include "problem.h"
+#include "Problem.h"
 #include <list>
 #include <cmath>
 
-DP::DP(const problem &Problem, std::vector<std::vector<PruningSolution>*> pruningValues):
-    elements_(Problem.getElements()),
-    elementsWithInformation_(Problem.getElementsWithInformation()),
-    capacity_(Problem.getCapacity()),
-    numberOfFunctions_(Problem.getNumberOfFunctions()),
-    functionsRestricted_(Problem.getRestrictedFunctions()),
+DP::DP(const Problem& problem, std::vector<std::vector<PruningSolution>*> pruningValues):
+    problem_(problem),
+    elementManager_(problem.getEleManager()),
+    capacity_(problem.getCapacity()),
+    numberOfFunctions_(problem.getNumberOfFunctions()),
+    functionsRestricted_(problem.getRestrictedFunctions()),
     pruningValues_(std::move(pruningValues))
 {
   solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
@@ -25,10 +25,10 @@ DP::DP(const problem &Problem, std::vector<std::vector<PruningSolution>*> prunin
   }
 }
 
-DP::DP(const problem &Problem, std::vector<int> functionsToCompare):
-    elements_(Problem.getElements()),
-    elementsWithInformation_(Problem.getElementsWithInformation()),
-    capacity_(Problem.getCapacity()),
+DP::DP(const Problem &problem, std::vector<int> functionsToCompare):
+    problem_(problem),
+    elementManager_(problem.getEleManager()),
+    capacity_(problem.getCapacity()),
     numberOfFunctions_(functionsToCompare.size()),
     functionsToCompare_(functionsToCompare)
 {
@@ -40,14 +40,9 @@ void DP::run()
 {
   int counter = 0;
   
-  float weightOfRemainingElements = 0;
+  float weightOfRemainingElements = problem_.getSumOfWeights();
   
-  for (const auto &element : elements_)
-  {
-    weightOfRemainingElements += element.at(0);
-  }
-  
-  for (const auto & element : elements_)
+  for (const auto & element : elementManager_.getElements())
   {
     counter++;
     
@@ -70,15 +65,15 @@ void DP::run()
       ++j;
     }
     
-    while (i < previousSolutions.size() and previousSolutions[i][0] + element.at(0) <= capacity_)
+    while (i < previousSolutions.size() and previousSolutions[i][0] + element.weight_ <= capacity_)
     {
       std::vector<float> newSolution(numberOfFunctions_ + 1, 0);
       
-      newSolution[0] = previousSolutions[i][0] + element.at(0);
+      newSolution[0] = previousSolutions[i][0] + element.weight_;
       
       for (int idx = 1; idx <= numberOfFunctions_; ++idx)
       {
-        newSolution[idx] = previousSolutions[i][idx] + element.at(functionsToCompare_[idx - 1]);
+        newSolution[idx] = previousSolutions[i][idx] + element.values_.at(functionsToCompare_[idx - 1] - 1);
       }
       
       while (j < previousSolutions.size() and lex(previousSolutions[j], newSolution))
@@ -100,7 +95,7 @@ void DP::run()
       ++j;
     }
   
-    weightOfRemainingElements -= element.at(0);
+    weightOfRemainingElements -= element.weight_;
     
     if(weightOfRemainingElements == 0)
     {
@@ -109,44 +104,36 @@ void DP::run()
     else
     {
       //! sort remaining elements
-      std::vector<elementWithValue> maxOrder;
+      std::vector<elementWithOrderValue> maxOrder;
   
-      maxOrder.reserve(elements_.size() - counter);
+      maxOrder.reserve(elementManager_.getElements().size() - counter);
       
-      std::vector<elementWithValue> sumOrder = maxOrder;//todo: element with value should use direct value and not pointer
-  
-      std::vector<int> comparePos = elementsWithInformation_[counter - 1].posAccordingToOrder_;
-  
-      for(auto ele = elementsWithInformation_.begin() + counter; ele != elementsWithInformation_.end(); ++ele)
+      std::vector<elementWithOrderValue> sumOrder = maxOrder;//todo: element with value should use direct value and not pointer
+      
+      elementManager_.removeElementFromOrder(counter);
+      
+      for(auto ele = elementManager_.getElements().begin() + counter; ele != elementManager_.getElements().end(); ++ele)
       {
-        for (int h = 0; h < comparePos.size(); ++h)
-        {
-          if (comparePos[h] < ele->posAccordingToOrder_[h])
-          {
-            --ele->posAccordingToOrder_[h];
-          }
-        }
-        
         float sum = 0;
         
         for (auto h : functionsToCompare_)
         {
-          sum += ele->posAccordingToOrder_[h - 1];
+          sum += ele->posOrderValueWeightRatio_[h - 1];
         }
         
-        sumOrder.emplace_back(&(*ele), sum);
+        sumOrder.emplace_back( &(*ele), sum);
   
         float val = 0;
         
         for (auto h : functionsToCompare_)
         {
-          if(val < ele->posAccordingToOrder_[h - 1])
+          if(val < ele->posOrderValueWeightRatio_[h - 1])
           {
-            val = ele->posAccordingToOrder_[h - 1];
+            val = ele->posOrderValueWeightRatio_[h - 1];
           }
         }
   
-        val += 1 / ( elements_.size() * numberOfFunctions_) * sum;
+        val += 1 / ( elementManager_.getElements().size() * numberOfFunctions_) * sum;
         
         maxOrder.emplace_back(&(*ele), val);
       }
@@ -162,13 +149,13 @@ void DP::run()
       {
         for (auto &ele : sumOrder)
         {
-          if(sol.front() + ele.element->element_.front() <= capacity_)
+          if(sol.front() + ele.ele_->weight_ <= capacity_)
           {
-            sol.front() += ele.element->element_.front();
+            sol.front() += ele.ele_->weight_;
             
             for (int idx = 1; idx <= numberOfFunctions_; ++idx)
             {
-              sol[idx] += ele.element->element_[functionsToCompare_[idx - 1]];
+              sol[idx] += ele.ele_->values_[functionsToCompare_[idx - 1] - 1];
             }
           }
         }
@@ -179,13 +166,13 @@ void DP::run()
       {
         for (auto &ele : maxOrder)
         {
-          if(sol.front() + ele.element->element_.front() <= capacity_)
+          if(sol.front() + ele.ele_->weight_ <= capacity_)
           {
-            sol.front() += ele.element->element_.front();
+            sol.front() += ele.ele_->weight_;
         
             for (int idx = 1; idx <= numberOfFunctions_; ++idx)
             {
-              sol[idx] += ele.element->element_[functionsToCompare_[idx - 1]];
+              sol[idx] += ele.ele_->values_[functionsToCompare_[idx - 1] - 1];
             }
           }
         }
@@ -197,17 +184,7 @@ void DP::run()
       
       for (auto &sol: solutions_)
       {
-        std::vector<float> upperBoundOfSol = upperBound(sol, sumOrder);
-  
-        std::vector<float> b = upperBound(sol, maxOrder);
-        
-        for(int idx = 1; idx < upperBoundOfSol.size(); ++idx)
-        {
-          if (upperBoundOfSol[idx] < b[idx])
-          {
-            upperBoundOfSol[idx] = b[idx];
-          }
-        }
+        std::vector<float> upperBoundOfSol(upperBound(sol));
         
         bool remove = false;
         
@@ -364,68 +341,63 @@ void DP::keepNonDominated(std::vector<float> &newSolution, std::list<std::vector
   }
 }
 
-std::vector<float> DP::upperBound(std::vector<float> &sol, std::vector<elementWithValue> &elementsSorted)
+std::vector<float> DP::upperBound(std::vector<float> &sol)
 {//todo: das muss sortiert werden nach den einzelnen ordnungen der funktionswerte, vorschlag ändere das Speichern von elementen
   std::vector<float> rval = sol;
   
-  int remainingCapacity = capacity_ - sol.front();
+  int pos = 1;
   
-  int numberOfRemainingElements = elementsSorted.size();
-  
-  int i = -1; //c_i reflects in for loop the last element added
-  
-  bool capacityWasReached = false;
-  
-  for (auto &ele: elementsSorted)
+  for(auto &elementsOrdered : elementManager_.getOrderedRawElementsValue())
   {
-    remainingCapacity -= ele.element->element_.front();
-    
-    if(remainingCapacity < 0)
-    {
-      remainingCapacity += ele.element->element_.front();
+    bool capacityWasReached = false;
   
-      capacityWasReached = true;
+    int remainingCapacity = capacity_ - sol.front();
+  
+    int i = -1; //c_i reflects in for loop the last element added
+  
+    int numberOfRemainingElements = elementsOrdered.size();
+  
+    for(auto &ele: elementsOrdered)
+    {
+      remainingCapacity -= ele.front();
+  
+      if(remainingCapacity < 0)
+      {
+        remainingCapacity += ele.front();
+    
+        capacityWasReached = true;
+    
+        ++i;
+    
+        break;
+      }
+      
+      rval[pos] += ele[pos];
       
       ++i;
-      
-      break;
     }
     
-    std::transform (rval.begin(), rval.end(), ele.element->element_.begin(), rval.begin(), std::plus<float>());
-  
-    ++i;
-  }
-  
-  if (!capacityWasReached)
-  {
-    return rval;
-  }
-  
-  std::vector<float> prevEle = elementsSorted[i - 1].element->element_;
-  
-  std::vector<float> ele = elementsSorted[i].element->element_;
-  
-  if(i != numberOfRemainingElements - 1)
-  {
-    std::vector<float> nextEle = elementsSorted[i + 1].element->element_;
-    
-    for(int j = 1; j < ele.size(); ++j)
+    if (!capacityWasReached)
     {
-      int a = std::floor(remainingCapacity * nextEle[j]/nextEle[0]);//todo: divison have already been done, can take direct value
+      continue;
+    }
+  
+    if(i != numberOfRemainingElements - 1)
+    {
+      int a = std::floor(remainingCapacity * elementsOrdered[i + 1][pos] / elementsOrdered[i + 1].front());//todo: divison have already been done, can take direct value
     
-      int b = std::floor(ele[j] - (ele[0] - remainingCapacity) * prevEle[j]/prevEle[0]);
+      int b = std::floor(elementsOrdered[i][pos] - (elementsOrdered[i].front() - remainingCapacity) * elementsOrdered[i - 1][pos]/elementsOrdered[i].front());
     
       int max = a > b ? a : b;
     
-      rval[j] += max;
+      rval[pos] += max;
     }
-  }
-  else
-  {//! if last element doesn't fit, then use upper bound by adding residual capacity of current element
-    for(int j = 1; j < ele.size(); ++j)
-    {
-      rval[j] += std::floor(remainingCapacity * ele[j]/ele[0]);//todo: divison have already been done, can take direct value
+    else
+    {//! if last element doesn't fit, then use upper bound by adding residual capacity of current element
+      rval[pos] += std::floor(remainingCapacity * elementsOrdered[i][pos]/elementsOrdered[i].front());//todo: divison have already been done, can take direct value
     }
+  
+    ++pos;
   }
   
   return rval;
@@ -435,7 +407,7 @@ bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int sta
 {
   bool weightIsGreater = false;
   
-  for (auto pruneSol = pruningValues_[elements_.size() - counter]->rbegin() + startValue; pruneSol != pruningValues_[elements_.size() - counter]->rend(); ++pruneSol)
+  for (auto pruneSol = pruningValues_[elementManager_.getNumberOfElements() - counter]->rbegin() + startValue; pruneSol != pruningValues_[elementManager_.getNumberOfElements() - counter]->rend(); ++pruneSol)
   {
     if(!weightIsGreater and sol.front() > pruneSol->weight_)
     {

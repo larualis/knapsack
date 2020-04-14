@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <list>
-#include "problem.h"
+#include "Problem.h"
 
 struct PruningSolution
 {
@@ -46,7 +46,7 @@ private:
   std::vector<std::vector<PruningSolution>* > pruningValues_;
 public:
   
-  revDP(const problem& Problem, std::vector<float> baseValues);
+  revDP(const Problem& problem, std::vector<float> baseValues);
   
   std::vector<std::vector<PruningSolution> *> run();
 private:

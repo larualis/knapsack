@@ -7,6 +7,7 @@
 #include <cmath>
 #include <utility>
 #include <cmath>
+#include <sstream>
 
 problem::problem(std::string filename, float capacity, int numberOfFunctions,
                  std::vector<int> restrictedFunctions, std::vector<float> slack):
@@ -50,16 +51,26 @@ void problem::readData(std::string& filename)
   
   file.open(filename);
   
-  std::vector<float> element(numberOfFunctions_ + 1, 0);
+  std::string line;
   
-  while (!file.eof())
+  while(std::getline(file, line))
   {
-    for (int i = 0; i <= numberOfFunctions_; ++i)
+    std::vector<float> element;
+    
+    std::stringstream ss(line);
+    
+    float val;
+    
+    while(ss >> val)
     {
-      file >> element[i];
+      element.push_back(val);
     }
+    
     elements_.push_back(element);
   }
+  
+  numberOfFunctions_ = elements_.front().size() - 1;
+  
   file.close();
 }
 

@@ -183,13 +183,20 @@ void ElementManager::updateOrderedRawElementsPointer_()
   
   for (int i = 0; i < numberOfFunctions_; ++i)
   {
-    std::vector<std::unique_ptr<element>> vec(numberOfElements_, nullptr);
+    std::vector<element*> vec(numberOfElements_, nullptr);
     
     for (auto &ele : elements_)
     {
-      vec[ele.posOrderValueWeightRatio_[i] - 1] = (std::unique_ptr<element>(&ele));
+      vec[ele.posOrderValueWeightRatio_[i] - 1] = &ele;
     }
     
     orderedRawElementsPointer_.emplace_back(vec);
   }
+}
+
+void ElementManager::reverseElements()
+{
+  reverse(elements_.begin(),elements_.end());
+  
+  updateOrderedRawElementsPointer_();
 }

@@ -22,10 +22,10 @@ struct element
   int SumOfposOrderValueWeightRatio_;
   
   explicit element(std::vector<float>& rawElement):
-      values_(std::copy(rawElement.begin() + 1, rawElement.end(), 0)),
       weight_(rawElement.front()),
       SumOfposOrderValueWeightRatio_(0)
   {
+    std::copy(rawElement.begin() + 1, rawElement.end(), values_.begin());
   
     posOrderValueWeightRatio_.resize(values_.size());
   
@@ -63,7 +63,7 @@ private:
   
   int numberOfFunctions_;
   
-  std::vector<std::vector<std::unique_ptr<element>>> orderedRawElementsPointer_;
+  std::vector<std::vector<element*>> orderedRawElementsPointer_;
   
   std::vector<std::vector<std::vector<float>>> orderedRawElementsValue_;
   
@@ -72,8 +72,6 @@ public:
   
   void generateOrder();
   
-  void removeElementFromOrder();
-  
   void reverseElements();
   
   void makeSumOrder();
@@ -81,6 +79,8 @@ public:
   void makeMaxOrder();
   
   void makeMinOrder();
+  
+private:
   
   void updateOrderedRawElementsPointer_();
   

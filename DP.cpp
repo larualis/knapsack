@@ -101,8 +101,15 @@ void DP::run()
     {
       finalSol = std::move(compareSol);
     }
+    
     else
     {
+      if(!pruningValues_.empty())
+      {
+        //todo: are we really not allowed to use it?
+        continue;
+      }
+      
       //! sort remaining elements
       std::vector<elementWithOrderValue> maxOrder;
   
@@ -342,7 +349,7 @@ void DP::keepNonDominated(std::vector<float> &newSolution, std::list<std::vector
 }
 
 std::vector<float> DP::upperBound(std::vector<float> &sol)
-{//todo: das muss sortiert werden nach den einzelnen ordnungen der funktionswerte, vorschlag ändere das Speichern von elementen
+{
   std::vector<float> rval = sol;
   
   int pos = 1;
@@ -379,14 +386,15 @@ std::vector<float> DP::upperBound(std::vector<float> &sol)
     
     if (!capacityWasReached)
     {
+      ++pos;
       continue;
     }
   
-    if(i != numberOfRemainingElements - 1)
+    if(i != numberOfRemainingElements - 1 and i != 0)
     {
       int a = std::floor(remainingCapacity * elementsOrdered[i + 1][pos] / elementsOrdered[i + 1].front());//todo: divison have already been done, can take direct value
     
-      int b = std::floor(elementsOrdered[i][pos] - (elementsOrdered[i].front() - remainingCapacity) * elementsOrdered[i - 1][pos]/elementsOrdered[i].front());
+      int b = std::floor(elementsOrdered[i][pos] - (elementsOrdered[i].front() - remainingCapacity) * elementsOrdered[i - 1][pos]/elementsOrdered[i - 1].front());
     
       int max = a > b ? a : b;
     

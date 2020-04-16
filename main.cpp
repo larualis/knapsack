@@ -73,11 +73,6 @@ void advancedPruning(Problem &Problem)
   std::cout <<"Took: " << duration <<"\n";
   
   std::cout <<"found Solutions: " << finaleSolution.size() <<"\n";
-  
-  while(!pruningValues.empty())
-  {
-    pruningValues.erase(pruningValues.end() - 1);
-  }
 }
 
 void standartDP(Problem &Problem, std::vector<int> functionsToCompare)

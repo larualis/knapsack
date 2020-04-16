@@ -10,6 +10,7 @@
 #include <list>
 #include "Problem.h"
 #include "revDP.h"
+#include <memory>
 
 class DP
 {
@@ -36,12 +37,12 @@ public:
 
 private:
   
-  std::vector<std::vector<PruningSolution>*> pruningValues_;
+  std::vector<std::shared_ptr<std::vector<PruningSolution>>> pruningValues_;
   
 public:
   DP(const Problem& problem, std::vector<int> functionsToCompare);
   
-  DP(const Problem &problem, std::vector<std::vector<PruningSolution> *> pruningValues);
+  DP(const Problem &problem, std::vector<std::shared_ptr<std::vector<PruningSolution>>> pruningValues);
   
   void run();
   

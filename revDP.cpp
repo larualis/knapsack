@@ -14,14 +14,16 @@ revDP::revDP(const Problem& problem, std::vector<float> baseValues):
   {
     baseValues.emplace(baseValues.begin(), capacity_);
     
-    pruningValues_.resize(elements_.size());
+    pruningValues_.reserve(elements_.size());
+  
+    std::shared_ptr<std::vector<PruningSolution>> shr = std::make_shared<std::vector<PruningSolution>>();
     
-    pruningValues_[0] = new std::vector<PruningSolution>;
+    pruningValues_.emplace_back(shr);
   
     pruningValues_[0]->emplace_back(PruningSolution(baseValues));
   }
 
-std::vector<std::vector<PruningSolution> *> revDP::run()
+std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
 {
   int numberOfCurrentElement = 0;
   
@@ -41,13 +43,15 @@ std::vector<std::vector<PruningSolution> *> revDP::run()
   
     int numberOfPreviousSolutions = pruningValues_[numberOfCurrentElement - 1]->size();
   
-    pruningValues_[numberOfCurrentElement] = new std::vector<PruningSolution>;
+    std::shared_ptr<std::vector<PruningSolution>> shr = std::make_shared<std::vector<PruningSolution>>();
+  
+    pruningValues_.emplace_back(shr);
     
     pruningValues_[numberOfCurrentElement]->reserve(numberOfPreviousSolutions * 2);
-    
-    std::vector<PruningSolution>* currentSolution = pruningValues_[numberOfCurrentElement];
   
-    std::vector<PruningSolution>* previousSolution = pruningValues_[numberOfCurrentElement - 1];
+    std::shared_ptr<std::vector<PruningSolution>> currentSolution = pruningValues_[numberOfCurrentElement];
+  
+    std::shared_ptr<std::vector<PruningSolution>> previousSolution = pruningValues_[numberOfCurrentElement - 1];
   
     int posNewSolutions = 0; // i
     
@@ -115,7 +119,7 @@ std::vector<std::vector<PruningSolution> *> revDP::run()
   return pruningValues_;
 }
 
-void revDP::maintainNonDominated(PruningSolution &newSolution, std::list<PruningSolution*> &compareSol, std::list<PruningSolution> &equalWeightStack, std::vector<PruningSolution>* currentSolution)
+void revDP::maintainNonDominated(PruningSolution &newSolution, std::list<PruningSolution*> &compareSol, std::list<PruningSolution> &equalWeightStack, std::shared_ptr<std::vector<PruningSolution>> currentSolution)
 {
   bool newSolutionIsGood = false;
   

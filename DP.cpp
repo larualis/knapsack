@@ -104,9 +104,9 @@ void DP::run()
     
     else
     {
-      if(!pruningValues_.empty())
+      //!used for testing, used to disable last pruning rule
+      if(false)
       {
-        //todo: are we really not allowed to use it?
         continue;
       }
       
@@ -140,7 +140,7 @@ void DP::run()
           }
         }
   
-        val += 1 / ( elementManager_.getElements().size() * numberOfFunctions_) * sum;
+        val += sum / (float)( elementManager_.getElements().size() * numberOfFunctions_);
         
         maxOrder.emplace_back(&(*ele), val);
       }
@@ -201,8 +201,11 @@ void DP::run()
           {
             if(dominates(compSol, upperBoundOfSol, true))
             {
-              remove = true;
-              break;
+              if(!std::equal(compSol.begin() + 1, compSol.end(), upperBoundOfSol.begin() + 1))
+              {
+                remove = true;
+                break;
+              }
             }
           }
           else
@@ -352,10 +355,12 @@ std::vector<float> DP::upperBound(std::vector<float> &sol)
 {
   std::vector<float> rval = sol;
   
-  int pos = 1;
-  
-  for(auto &elementsOrdered : elementManager_.getOrderedRawElementsValue())
+  for (int pos = 1; pos <= functionsToCompare_.size(); ++pos)
   {
+    int idxAccess = functionsToCompare_[pos - 1];
+    
+    auto& elementsOrdered = elementManager_.getOrderedRawElementsValue()[idxAccess - 1];
+    
     bool capacityWasReached = false;
   
     int remainingCapacity = capacity_ - sol.front();
@@ -379,22 +384,21 @@ std::vector<float> DP::upperBound(std::vector<float> &sol)
         break;
       }
       
-      rval[pos] += ele[pos];
+      rval[pos] += ele[idxAccess];
       
       ++i;
     }
     
     if (!capacityWasReached)
     {
-      ++pos;
       continue;
     }
   
     if(i != numberOfRemainingElements - 1 and i != 0)
     {
-      int a = std::floor(remainingCapacity * elementsOrdered[i + 1][pos] / elementsOrdered[i + 1].front());//todo: divison have already been done, can take direct value
+      int a = std::floor(remainingCapacity * elementsOrdered[i + 1][idxAccess] / elementsOrdered[i + 1].front());//todo: divison have already been done, can take direct value
     
-      int b = std::floor(elementsOrdered[i][pos] - (elementsOrdered[i].front() - remainingCapacity) * elementsOrdered[i - 1][pos]/elementsOrdered[i - 1].front());
+      int b = std::floor(elementsOrdered[i][idxAccess] - (elementsOrdered[i].front() - remainingCapacity) * elementsOrdered[i - 1][idxAccess]/elementsOrdered[i - 1].front());
     
       int max = a > b ? a : b;
     
@@ -402,10 +406,8 @@ std::vector<float> DP::upperBound(std::vector<float> &sol)
     }
     else
     {//! if last element doesn't fit, then use upper bound by adding residual capacity of current element
-      rval[pos] += std::floor(remainingCapacity * elementsOrdered[i][pos]/elementsOrdered[i].front());//todo: divison have already been done, can take direct value
+      rval[pos] += std::floor(remainingCapacity * elementsOrdered[i][idxAccess]/elementsOrdered[i].front());//todo: divison have already been done, can take direct value
     }
-  
-    ++pos;
   }
   
   return rval;

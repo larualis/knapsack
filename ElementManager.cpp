@@ -117,7 +117,7 @@ void ElementManager::makeMaxOrder()
       }
     }
   
-    greatestPos += 1 / ( numberOfElements_ * numberOfFunctions_) * ele.SumOfposOrderValueWeightRatio_;
+    greatestPos += (float)ele.SumOfposOrderValueWeightRatio_ / (float)( numberOfElements_ * numberOfFunctions_);
     
     orderVector.emplace_back(elementWithOrderValue(&ele, greatestPos));
   }
@@ -156,7 +156,7 @@ void ElementManager::makeMinOrder()
       }
     }
   
-    smallestPos += 1 / ( numberOfElements_ * numberOfFunctions_) * ele.SumOfposOrderValueWeightRatio_;
+    smallestPos += (float) ele.SumOfposOrderValueWeightRatio_ / (float)( numberOfElements_ * numberOfFunctions_);
     
     orderVector.emplace_back(elementWithOrderValue(&ele, smallestPos));
   }
@@ -221,7 +221,6 @@ void ElementManager::removeElementFromOrder(int elementNumber)
       }
     }
   }
-  
   
 }
 

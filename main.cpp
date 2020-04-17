@@ -97,14 +97,16 @@ void standartDP(Problem &Problem, std::vector<int> functionsToCompare)
   std::cout <<"found Solutions: " << finaleSolution.size() <<"\n";
 }
 
-void checkCorrectness(Problem &Problem)
+void checkCorrectness(Problem &problem)
 {
   //! restricted DP and data extraction
-  std::vector<float> minimalFunctionValues(Problem.getRestrictedFunctions().size(), 0);
+  problem.reverseElements();
   
-  for (int i = 0; i < Problem.getRestrictedFunctions().size(); ++i)
+  std::vector<float> minimalFunctionValues(problem.getRestrictedFunctions().size(), 0);
+  
+  for (int i = 0; i < problem.getRestrictedFunctions().size(); ++i)
   {
-    DP restrictedDP(Problem, std::vector<int> {Problem.getRestrictedFunctions()[i]});
+    DP restrictedDP(problem, std::vector<int> {problem.getRestrictedFunctions()[i]});
     
     restrictedDP.run();
     
@@ -121,65 +123,91 @@ void checkCorrectness(Problem &Problem)
   
   for (int i = 0; i < minimalFunctionValues.size(); ++i )
   {
-    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] * Problem.getSlack()[i]);
+    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] * problem.getSlack()[i]);
   }
   std::cout<<"vector for calc"<<std::endl;
   
   printVector<float>(minimalFunctionValues);
   
   //! rev DP
-  revDP rDP(Problem, minimalFunctionValues);
+  revDP rDP(problem, minimalFunctionValues);
   
   auto pruningValues = rDP.run();
   
   //! final DP
-  DP finalDP(Problem, pruningValues);
+  DP finalDP(problem, pruningValues);
   
   finalDP.run();
   
   auto finaleSolutionRev = finalDP.getFinalSol();
   
   //!begin normal
+  problem.reverseElements();
   
-  std::vector<int> functionsToCompare(Problem.getNumberOfFunctions(), 0);
+  std::vector<int> functionsToCompare(problem.getNumberOfFunctions(), 0);
   
-  for (int i = 0; i < Problem.getNumberOfFunctions(); ++i)
+  for (int i = 0; i < problem.getNumberOfFunctions(); ++i)
   {
     functionsToCompare[i] = i + 1;
   }
   
-  DP dp(Problem, functionsToCompare);
+  DP dp(problem, functionsToCompare);
   
   dp.run();
   
   std::list< std::vector<float> > finaleSolution = dp.getFinalSol();
   
-  //!check if equal
-  for (auto sol = finaleSolution.begin(); sol != finaleSolution.end(); ++sol)
+  //!remove solutions that don't fit criteria
+  auto sol = finaleSolution.begin();
+  
+  while(sol != finaleSolution.end())
   {
-    for (int i = 0; i < Problem.getRestrictedFunctions().size(); ++i)
+    bool dom = false;
+    for (int i = 0; i < problem.getRestrictedFunctions().size(); ++i)
     {
-      if(sol->at(Problem.getRestrictedFunctions()[i]) < minimalFunctionValues[i] )
+      if(sol->at(problem.getRestrictedFunctions()[i]) < minimalFunctionValues[i] )
       {
-        sol = finaleSolution.erase(sol);
-        
-        --sol;
+        dom = true;
+        break;
       }
+    }
+    
+    if(dom)
+    {
+      sol = finaleSolution.erase(sol);
+    }
+    else
+    {
+      ++sol;
     }
   }
   
+  //!check if equal
   bool error = false;
   
   if(finaleSolution.size() != finaleSolutionRev.size())
   {
     std::cout<<"size doesn't match"<<std::endl;
-    error = true;
+    
+    std::cout<<"solutions"<<std::endl;
+    
+    for(auto &x: finaleSolution)
+    {
+      printVector<float>(x);
+    }
+  
+    std::cout<<"solutions calc:"<<std::endl;
+  
+    for(auto &x: finaleSolutionRev)
+    {
+      printVector<float>(x);
+    }
   }
   else
   {
     auto iterator1 = finaleSolution.begin();
-    auto iterator2 = finaleSolutionRev.begin();
     
+    auto iterator2 = finaleSolutionRev.begin();
     
     while(iterator1 != finaleSolution.end())
     {
@@ -206,11 +234,6 @@ void checkCorrectness(Problem &Problem)
     {
       std::cout<<"Solutions match"<<std::endl;
     }
-  }
-  
-  while(!pruningValues.empty())
-  {
-    pruningValues.erase(pruningValues.end() - 1);
   }
 };
 

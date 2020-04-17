@@ -8,7 +8,7 @@
 #include <list>
 #include <cmath>
 
-DP::DP(const Problem& problem, std::vector<std::shared_ptr<std::vector<PruningSolution>>> pruningValues):
+DP::DP(Problem& problem, std::vector<std::shared_ptr<std::vector<PruningSolution>>> pruningValues):
     problem_(problem),
     elementManager_(problem.getEleManager()),
     capacity_(problem.getCapacity()),
@@ -25,7 +25,7 @@ DP::DP(const Problem& problem, std::vector<std::shared_ptr<std::vector<PruningSo
   }
 }
 
-DP::DP(const Problem &problem, std::vector<int> functionsToCompare):
+DP::DP(Problem &problem, std::vector<int> functionsToCompare):
     problem_(problem),
     elementManager_(problem.getEleManager()),
     capacity_(problem.getCapacity()),

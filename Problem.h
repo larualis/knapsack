@@ -11,55 +11,6 @@
 #include <algorithm>
 #include "ElementManager.h"
 
-struct elementsWithOrder
-{
-  std::vector<float> element_;
-  
-  std::vector<int> posAccordingToOrder_;
-  
-  std::vector<float> valueForOrder_;
-  
-  explicit elementsWithOrder(std::vector<float> element):
-  element_(std::move(element))
-  {
-    posAccordingToOrder_.resize(element_.size() - 1);
-  
-    valueForOrder_.reserve(element_.size() - 1);
-    
-    for (int i = 1; i < element_.size(); ++i)
-    {
-      valueForOrder_.push_back(element_[i] / element_[0]);
-    }
-  }
-  
-  int sumOfPosOrder()
-  {
-    int rval = 0;
-    
-    for (auto val: posAccordingToOrder_)
-    {
-      rval += val;
-    }
-    return rval;
-  }
-};
-
-struct elementWithValue
-{
-  elementsWithOrder* element;
-  float value;
-  
-  elementWithValue( elementsWithOrder* ele, float val):
-  element(ele),
-  value(val)
-  {}
-  
-  bool operator < (const elementWithValue& str) const
-  {
-    return (value < str.value);
-  }
-};
-
 class Problem
 {
 private:
@@ -76,15 +27,8 @@ private:
   
   ElementManager eleManager_;
 public:
-  const ElementManager &getEleManager() const;
+  ElementManager &getEleManager();
 
-private:
-  
-  std::vector<elementsWithOrder> elementsWithInformation_;
-  
-  std::vector<std::vector<float>> elements_;
-  
-public:
   float getCapacity() const;
   
   int getNumberOfFunctions() const;
@@ -93,24 +37,16 @@ public:
   
   const std::vector<int> &getRestrictedFunctions() const;
   
-  const std::vector<std::vector<float>> &getElements() const;
-  
-  const std::vector<elementsWithOrder> &getElementsWithInformation() const;
-  
   const std::vector<float> &getSlack() const;
 
 private:
   
-  void readData(std::string& filename);
+  void readData(std::string& filename, std::vector<std::vector<float>>& rawElements);
   
-  void initialiaze(std::string& filename);
-
 public:
   Problem(std::string filename, float capacity, int numberOfFunctions, std::vector<int> restrictedFunctions, std::vector<float> slack);
   
   Problem(std::string filename, int numberOfFunctions, std::vector<int> restrictedFunctions, std::vector<float> slack);
-  
-  void orderInformation();
   
   void reverseElements();
   

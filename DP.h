@@ -40,9 +40,9 @@ private:
   std::vector<std::shared_ptr<std::vector<PruningSolution>>> pruningValues_;
   
 public:
-  DP(const Problem& problem, std::vector<int> functionsToCompare);
+  DP(Problem& problem, std::vector<int> functionsToCompare);
   
-  DP(const Problem &problem, std::vector<std::shared_ptr<std::vector<PruningSolution>>> pruningValues);
+  DP(Problem &problem, std::vector<std::shared_ptr<std::vector<PruningSolution>>> pruningValues);
   
   void run();
   

@@ -6,15 +6,16 @@
 #include <iostream>
 #include "revDP.h"
 
-revDP::revDP(const Problem& problem, std::vector<float> baseValues):
-  elements_(problem.getElements()),
+revDP::revDP(Problem& problem, std::vector<float> baseValues):
+  problem_(problem),
+  elementManager_(problem.getEleManager()),
   capacity_(problem.getCapacity()),
   functionSubset_(problem.getRestrictedFunctions()),
   numberOfFunctions_(problem.getRestrictedFunctions().size())
   {
     baseValues.emplace(baseValues.begin(), capacity_);
     
-    pruningValues_.reserve(elements_.size());
+    pruningValues_.reserve(elementManager_.getNumberOfElements() + 1);
   
     std::shared_ptr<std::vector<PruningSolution>> shr = std::make_shared<std::vector<PruningSolution>>();
     
@@ -27,14 +28,9 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
 {
   int numberOfCurrentElement = 0;
   
-  float weightOfRemainingElements = 0;
+  float weightOfRemainingElements = problem_.getSumOfWeights();
   
-  for (const auto &element : elements_)
-  {
-    weightOfRemainingElements += element.at(0);
-  }
-  
-  for (auto element = elements_.rbegin(); element != elements_.rend(); ++element)
+  for (auto element = elementManager_.getElements().rbegin(); element != elementManager_.getElements().rend(); ++element)
   {
     //init
     ++numberOfCurrentElement;
@@ -62,18 +58,18 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
     std::list<PruningSolution> equalWeightStack;
     //init end
     
-    weightOfRemainingElements -= element->at(0);
+    weightOfRemainingElements -= element->weight_;
   
-    while (posNewSolutions < numberOfPreviousSolutions and (*previousSolution)[posNewSolutions].weight_ - element->at(0) >= 0)
+    while (posNewSolutions < numberOfPreviousSolutions and (*previousSolution)[posNewSolutions].weight_ - element->weight_ >= 0)
     {
       std::vector<float> newSolutionVec(numberOfFunctions_ + 1, 0);
   
-      newSolutionVec[0] = (*previousSolution)[posNewSolutions].weight_ - element->at(0); //todo: doppelte berechnung
+      newSolutionVec[0] = (*previousSolution)[posNewSolutions].weight_ - element->weight_; //todo: doppelte berechnung
   
       for (int i = 1; i <= numberOfFunctions_; ++i)
       {
         newSolutionVec[i] =
-            (*previousSolution)[posNewSolutions].solutionValues_.at(i) - element->at(functionSubset_[i - 1]) < 0 ? 0 : (*previousSolution)[posNewSolutions].solutionValues_.at(i) - element->at(functionSubset_[i - 1]);
+            (*previousSolution)[posNewSolutions].solutionValues_.at(i) - element->values_.at(functionSubset_[i - 1] - 1) < 0 ? 0 : (*previousSolution)[posNewSolutions].solutionValues_.at(i) - element->values_.at(functionSubset_[i - 1] - 1);
       }
       
       PruningSolution newSolution(newSolutionVec);
@@ -109,11 +105,6 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
       }
     }
     
-    if(weightOfRemainingElements == 0)
-    {
-      auto lastEle = currentSolution->back();
-      continue;
-    }
     pruningValues_[numberOfCurrentElement]->shrink_to_fit();
   }
   return pruningValues_;

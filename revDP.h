@@ -36,7 +36,9 @@ class revDP
 {
 
 private:
-  const std::vector<std::vector<float>>& elements_;
+  Problem& problem_;
+  
+  ElementManager& elementManager_;
   
   float capacity_;
   
@@ -47,7 +49,7 @@ private:
   std::vector<std::shared_ptr<std::vector<PruningSolution>>> pruningValues_;
 public:
   
-  revDP(const Problem& problem, std::vector<float> baseValues);
+  revDP(Problem& problem, std::vector<float> baseValues);
   
   std::vector<std::shared_ptr<std::vector<PruningSolution>>> run();
 private:

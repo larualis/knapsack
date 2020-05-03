@@ -52,6 +52,24 @@ Problem::Problem(std::string filename, int numberOfFunctions,
   capacity_ = std::floor(sumOfWeights_ /2);
   
   eleManager_ = ElementManager(rawElements, rawElements.size(), numberOfFunctions_);
+  
+  slack_ = std::vector<float>(restrictedFunctions_.size(), 0);
+  
+  int k = 0;
+  for(auto i : restrictedFunctions_ )
+  {
+    for (auto& ele: eleManager_.getElements())
+    {
+      slack_[k] += ele.values_[i - 1];
+    }
+    ++k;
+  }
+  
+  for(auto &val : slack_)
+  {
+    //!this should be average value * 10% of number of Elements, should also include number of restrited functions
+    val = (val / (float) eleManager_.getNumberOfElements()) * (float) eleManager_.getNumberOfElements() * 0.6 * 0.1;
+  }
 }
 
 void Problem::readData(std::string& filename, std::vector<std::vector<float>>& rawElements)

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <vector>
 #include <chrono>
 #include <cmath>
@@ -43,7 +44,7 @@ void advancedPruning(Problem &Problem)
   
   for (int i = 0; i < minimalFunctionValues.size(); ++i )
   {
-    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] * Problem.getSlack()[i]);
+    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] - Problem.getSlack()[i]);
   }
   std::cout<<"vector for calc"<<std::endl;
   
@@ -123,7 +124,7 @@ void checkCorrectness(Problem &problem)
   
   for (int i = 0; i < minimalFunctionValues.size(); ++i )
   {
-    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] * problem.getSlack()[i]);
+    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] - problem.getSlack()[i]);
   }
   std::cout<<"vector for calc"<<std::endl;
   
@@ -235,49 +236,82 @@ void checkCorrectness(Problem &problem)
       std::cout<<"Solutions match"<<std::endl;
     }
   }
-};
+}
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-  //!input
-  std::vector<int> restrictedFunctions {1,2};
+  /**
+   * input of type: ../directory to files --Type= --ResFunc=
+   * /directory to files contains all knapsack problem which should be solved, they should be similar
+   * --Type= 0 normal 1 restricted 2 check correctness
+   * --ResFunc= number of Functions which should be restricted format: 1,3,6
+   **/
+  int type = 0;
   
-  std::vector<float> slack {0.95,0.8};
+  std::vector<int> restrictedFunctions;
   
-  std::string data = "../python/knapsack.txt";
+  std::string pathToFiles(argv[1]);
   
-  Problem problem(data, 3, restrictedFunctions, slack);
-  
-  problem.makeMaxOrder();
-  
-  switch (std::stoi(argv[1]))
+  for(int i = 1; i < argc; ++i)
   {
-    case 0:
+    std::string input (argv[i]);
+    
+    if (input.find("--Type=")!= std::string::npos)
+    {
+      type = std::stoi(input.substr(input.find('=') + 1));
+    }
+  
+    if (input.find("--ResFunc=")!= std::string::npos)
+    {
+      std::string resFunc = (input.substr(input.find('=') + 1));
+      //!can only handle numbers 1 to 9
+      for(char const &c : resFunc)
+      {
+        if(c!=',')
+        {
+          restrictedFunctions.push_back(c - '0');
+        }
+      }
+    }
+  }
+  
+  for (const auto & entry : std::filesystem::directory_iterator(pathToFiles))
+  {
+    std::vector<float> slack {0.8};
+    
+    Problem problem(entry.path().string(), 3, restrictedFunctions, slack);
+  
+    problem.makeMaxOrder();
+  
+    switch (type)
+    {
+      case 0:
       {
         std::vector<int> functionsToCompare(problem.getNumberOfFunctions(), 0);
-  
+      
         for (int i = 0; i < problem.getNumberOfFunctions(); ++i)
         {
           functionsToCompare[i] = i + 1;
         }
-  
+      
         standartDP(problem, functionsToCompare);
         break;
       }
-    case 1:
+      case 1:
       {
         problem.reverseElements();
-        
+      
         advancedPruning(problem);
         break;
       }
-    case 2:
-    {
-      checkCorrectness(problem);
-      break;
+      case 2:
+      {
+        checkCorrectness(problem);
+        break;
+      }
+      default:
+        std::cout<<"wrong argument"<<std::endl;
     }
-    default:
-      std::cout<<"wrong argument"<<std::endl;
   }
   return 0;
 }

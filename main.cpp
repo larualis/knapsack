@@ -279,7 +279,7 @@ int main(int argc, char *argv[])
   {
     std::vector<float> slack {0.8};
     
-    Problem problem(entry.path().string(), 3, restrictedFunctions, slack);
+    Problem problem(entry.path().string(), restrictedFunctions, slack);
   
     problem.makeMaxOrder();
   

@@ -9,7 +9,7 @@
 #include <cmath>
 #include <sstream>
 
-Problem::Problem(std::string filename, float capacity, int numberOfFunctions,
+Problem::Problem(std::string filename, float capacity,
                  std::vector<int> restrictedFunctions, std::vector<float> slack):
                  capacity_(capacity),
                  restrictedFunctions_(std::move(restrictedFunctions)),
@@ -31,7 +31,7 @@ Problem::Problem(std::string filename, float capacity, int numberOfFunctions,
   eleManager_ = ElementManager(rawElements, rawElements.size(), numberOfFunctions_);
 }
 
-Problem::Problem(std::string filename, int numberOfFunctions,
+Problem::Problem(std::string filename,
                  std::vector<int> restrictedFunctions, std::vector<float> slack):
     restrictedFunctions_(std::move(restrictedFunctions)),
     slack_(std::move(slack))

@@ -230,7 +230,7 @@ void DP::run()
 }
 
 
-void DP::maintainNonDominated(std::vector<float> &newSolution, int validRound, std::list<std::vector<float>> &compareSol, int counter, int startValue)
+void DP::maintainNonDominated(std::vector<float> &newSolution, int validRound, std::list<std::vector<float>> &compareSol, int counter, int& startValue)
 {
   bool newSolutionIsGreater = false;
   
@@ -413,7 +413,7 @@ std::vector<float> DP::upperBound(std::vector<float> &sol)
   return rval;
 }
 
-bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int startValue, int &validForRounds)
+bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int& startValue, int &validForRounds)
 {
   bool weightIsGreater = false;
   

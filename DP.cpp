@@ -417,6 +417,30 @@ bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int& st
 {
   bool weightIsGreater = false;
   
+  //todo: experimental
+  if(true and functionsRestricted_.size() == 1)
+  {
+    for (auto pruneSol = pruningValues_[elementManager_.getNumberOfElements() - counter]->rbegin() + startValue; pruneSol != pruningValues_[elementManager_.getNumberOfElements() - counter]->rend(); ++pruneSol)
+    {
+      if (pruneSol->weight_ >= sol.front())
+      {
+        if( pruneSol->solutionValues_.back() <= sol[functionsRestricted_[0]])
+        {
+          validForRounds = pruneSol->relevantRounds_;
+          return true;
+        }
+        else
+        {
+          return false;
+        }
+      }
+      else
+      {
+        ++startValue;
+      }
+    }
+  }
+  
   for (auto pruneSol = pruningValues_[elementManager_.getNumberOfElements() - counter]->rbegin() + startValue; pruneSol != pruningValues_[elementManager_.getNumberOfElements() - counter]->rend(); ++pruneSol)
   {
     if(!weightIsGreater and sol.front() > pruneSol->weight_)

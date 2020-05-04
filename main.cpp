@@ -2,11 +2,12 @@
 #include <fstream>
 #include <filesystem>
 #include <vector>
-#include <chrono>
 #include <cmath>
 #include "DP.h"
 #include "Problem.h"
 #include "revDP.h"
+#include "solution/NormalSolution.h"
+#include "solution/RestrictedSolution.h"
 
 template <class x>
 void printVector(std::vector<x> vec)
@@ -16,86 +17,6 @@ void printVector(std::vector<x> vec)
     std::cout << ele << " ";
   }
   std::cout << std::endl;
-}
-
-void advancedPruning(Problem &Problem)
-{
-  //! restricted DP and data extraction
-  auto t1 = std::chrono::high_resolution_clock::now();
-  
-  std::vector<float> minimalFunctionValues(Problem.getRestrictedFunctions().size(), 0);
-  
-  for (int i = 0; i < Problem.getRestrictedFunctions().size(); ++i)
-  {
-    DP restrictedDP(Problem, std::vector<int> {Problem.getRestrictedFunctions()[i]});
-  
-    restrictedDP.run();
-  
-    auto solutions = restrictedDP.getFinalSol();
-  
-    for (auto sol: solutions)
-    {
-      if(minimalFunctionValues[i] < sol[1])
-      {
-        minimalFunctionValues[i] = sol[1];
-      }
-    }
-  }
-  
-  for (int i = 0; i < minimalFunctionValues.size(); ++i )
-  {
-    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] - Problem.getSlack()[i]);
-  }
-  std::cout<<"vector for calc"<<std::endl;
-  
-  printVector<float>(minimalFunctionValues);
-  
-  //! rev DP
-  revDP rDP(Problem, minimalFunctionValues);
-  
-  auto pruningValues = rDP.run();
-  
-  //! final DP
-  DP finalDP(Problem, pruningValues);
-  
-  finalDP.run();
-  
-  auto t2 = std::chrono::high_resolution_clock::now();
-  
-  auto finaleSolution = finalDP.getFinalSol();
-  
-  for (auto sol: finaleSolution)
-  {
-    printVector<float>(sol);
-  }
-  
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
-  
-  std::cout <<"Took: " << duration <<"\n";
-  
-  std::cout <<"found Solutions: " << finaleSolution.size() <<"\n";
-}
-
-void standartDP(Problem &Problem, std::vector<int> functionsToCompare)
-{
-  DP dp(Problem, functionsToCompare);
-  
-  auto t1 = std::chrono::high_resolution_clock::now();
-  dp.run();
-  auto t2 = std::chrono::high_resolution_clock::now();
-  
-  
-  auto finaleSolution = dp.getFinalSol();
-  
-  for (auto &sol: finaleSolution)
-  {
-    printVector<float>(sol);
-  }
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
-  
-  std::cout <<"Took: " << duration <<"\n";
-  
-  std::cout <<"found Solutions: " << finaleSolution.size() <<"\n";
 }
 
 void checkCorrectness(Problem &problem)
@@ -111,7 +32,7 @@ void checkCorrectness(Problem &problem)
     
     restrictedDP.run();
     
-    auto solutions = restrictedDP.getFinalSol();
+    auto solutions = restrictedDP.getSolutions();
     
     for (auto sol: solutions)
     {
@@ -140,7 +61,7 @@ void checkCorrectness(Problem &problem)
   
   finalDP.run();
   
-  auto finaleSolutionRev = finalDP.getFinalSol();
+  auto finaleSolutionRev = finalDP.getSolutions();
   
   //!begin normal
   problem.reverseElements();
@@ -156,7 +77,7 @@ void checkCorrectness(Problem &problem)
   
   dp.run();
   
-  std::list< std::vector<float> > finaleSolution = dp.getFinalSol();
+  std::vector< std::vector<float> > finaleSolution = dp.getSolutions();
   
   //!remove solutions that don't fit criteria
   auto sol = finaleSolution.begin();
@@ -250,6 +171,8 @@ int main(int argc, char *argv[])
   
   std::vector<int> restrictedFunctions;
   
+  bool printSolutions = true;
+  
   std::string pathToFiles(argv[1]);
   
   for(int i = 1; i < argc; ++i)
@@ -287,21 +210,24 @@ int main(int argc, char *argv[])
     {
       case 0:
       {
-        std::vector<int> functionsToCompare(problem.getNumberOfFunctions(), 0);
-      
-        for (int i = 0; i < problem.getNumberOfFunctions(); ++i)
-        {
-          functionsToCompare[i] = i + 1;
-        }
-      
-        standartDP(problem, functionsToCompare);
+        NormalSolution sol(problem);
+        
+        sol.generateSolutin();
+        
+        std::cout<<sol.getSolutionSize() <<std::endl;
+        std::cout<<sol.getRuntime() <<std::endl;
         break;
       }
       case 1:
       {
         problem.reverseElements();
-      
-        advancedPruning(problem);
+  
+        RestrictedSolution sol(problem);
+        
+        sol.generateSolutin();
+  
+        std::cout<<sol.getSolutionSize() <<std::endl;
+        std::cout<<sol.getRuntime() <<std::endl;
         break;
       }
       case 2:

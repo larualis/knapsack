@@ -30,10 +30,6 @@ private:
   std::vector<std::vector<float>> solutions_;
   
   std::vector<int> validRounds_;
-  
-  std::list<std::vector<float>> finalSol;
-public:
-  const std::list<std::vector<float>> &getFinalSol() const;
 
 private:
   

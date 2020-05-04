@@ -99,7 +99,9 @@ void DP::run()
     
     if(weightOfRemainingElements == 0)
     {
-      finalSol = std::move(compareSol);
+      std::vector finalSol (compareSol.begin(), compareSol.end());
+      
+      solutions_ = std::move(finalSol);
     }
     
     else
@@ -517,9 +519,4 @@ bool DP::dlex(std::vector<float> &sol1, std::vector<float> &sol2)
 const std::vector<std::vector<float>> &DP::getSolutions() const
 {
   return solutions_;
-}
-
-const std::list<std::vector<float>> &DP::getFinalSol() const
-{
-  return finalSol;
 }

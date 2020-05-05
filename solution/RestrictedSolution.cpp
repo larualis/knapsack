@@ -4,7 +4,6 @@
 
 #include <chrono>
 #include <cmath>
-#include <iostream>
 #include "RestrictedSolution.h"
 #include "../DP.h"
 
@@ -36,10 +35,7 @@ void RestrictedSolution::generateSolutin()
   {
     minimalFunctionValues_[i] = std::floor(minimalFunctionValues_[i] - problem_.getSlack()[i]);
   }
-  std::cout<<"vector for calc"<<std::endl;
-  
-  //printVector<float>(minimalFunctionValues);
-  
+
   //! rev DP
   revDP rDP(problem_, minimalFunctionValues_);
   

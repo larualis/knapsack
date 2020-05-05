@@ -46,7 +46,7 @@ void DP::run()
   {
     counter++;
     
-    std::cout<<counter<<"\n";
+    std::cout<<counter<<"\r"<<std::flush;
     
     int i = 0;
     

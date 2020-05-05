@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <numeric>
 #include "StatisticManager.h"
 
 StatisticManager::StatisticManager()
@@ -48,7 +49,6 @@ void StatisticManager::printStatistics(bool printValues)
   
   float avgSolutionSize = 0;
   
-  
   for(auto x : runtime_)
   {
     avgRuntime += x;
@@ -68,37 +68,45 @@ void StatisticManager::printStatistics(bool printValues)
   std::cout << "average time: " << avgRuntime<<"\n";
   
   std::cout << "average number of solution: " << avgSolutionSize<<"\n";
+  
+  std::cout << "\n";
 }
 
 void StatisticManager::printCompareToOtherSolutions(StatisticManager &otherManager, bool detailed)
 {
-  float compRuntime = 0;
+  std::vector<float> compRuntime;
   
-  float compSolutionSize = 0;
+  std::vector<float> compSolutionSize;
   
   for (int i = 0; i < countKnapsack_; ++i)
   {
-    compRuntime += (float) otherManager.getRuntime()[i] / runtime_[i];
-    
-    compSolutionSize += (float) solutionSize_[i] / otherManager.getSolutionSize()[i];
-    
-    if(detailed)
-    {
-      std::cout<< (float) otherManager.getRuntime()[i] / runtime_[i] <<" "<<(float) otherManager.getSolutionSize()[i] / solutionSize_[i];
-    }
+    compSolutionSize.push_back((float) solutionSize_[i] / otherManager.getSolutionSize()[i]);
+  
+    compRuntime.push_back((float) otherManager.getRuntime()[i] / runtime_[i]);
   }
   
-  compRuntime = compRuntime / countKnapsack_;
-  
-  compSolutionSize = compSolutionSize / countKnapsack_;
+  if(detailed)
+  {
+    for (int i = 0; i < countKnapsack_; ++i)
+    {
+      std::cout<< compRuntime[i] <<"\t"<<compSolutionSize[i];
+      std::cout<<"\n";
+    }
+  }
   
   std::cout << "\n";
   
   std::cout << "solved number of knapsack problems: " << countKnapsack_<<"\n";
   
-  std::cout << "average time factor: " << compRuntime<<"\n";
+  std::cout << "average time factor: " << std::accumulate(compRuntime.begin(),compRuntime.end(),0.0)/countKnapsack_<<"\n";
   
-  std::cout << "average number of solution factor: " << compSolutionSize<<"\n";
+  std::cout << "time range from " << *std::min_element(compRuntime.begin(),compRuntime.end())<<" to " << *std::max_element(compRuntime.begin(),compRuntime.end())<<"\n";
+  
+  std::cout << "average number of solution factor: " << std::accumulate(compSolutionSize.begin(),compSolutionSize.end(),0.0)/countKnapsack_<<"\n";
+  
+  std::cout << "size range from " << *std::min_element(compSolutionSize.begin(),compSolutionSize.end())<<" to " << *std::max_element(compSolutionSize.begin(),compSolutionSize.end())<<"\n";
+  
+  std::cout << "\n";
 }
 
 const std::vector<int> &StatisticManager::getRuntime() const

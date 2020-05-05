@@ -211,6 +211,8 @@ int main(int argc, char *argv[])
   
   for (const auto & entry : std::filesystem::directory_iterator(pathToFiles))
   {
+    std::cout<<"solve Knapsack: "<<manager.getRuntime().size() + 1<<"\r"<<"\n"<<std::flush;
+    
     std::vector<float> slack {0.8};
     
     Problem problem(entry.path().string(), restrictedFunctions, slack);

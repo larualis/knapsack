@@ -8,6 +8,7 @@
 #include "revDP.h"
 #include "solution/NormalSolution.h"
 #include "solution/RestrictedSolution.h"
+#include "solution/StatisticManager.h"
 
 template <class x>
 void printVector(std::vector<x> vec)
@@ -171,7 +172,7 @@ int main(int argc, char *argv[])
   
   std::vector<int> restrictedFunctions;
   
-  bool printSolutions = true;
+  bool printSolutions = false;
   
   std::string pathToFiles(argv[1]);
   
@@ -196,7 +197,17 @@ int main(int argc, char *argv[])
         }
       }
     }
+  
+    if (input.find("--PrintSolution=")!= std::string::npos)
+    {
+      if("true" == input.substr(input.find('=') + 1))
+      {
+        printSolutions = true;
+      }
+    }
   }
+  
+  StatisticManager manager, secondManager;
   
   for (const auto & entry : std::filesystem::directory_iterator(pathToFiles))
   {
@@ -205,7 +216,7 @@ int main(int argc, char *argv[])
     Problem problem(entry.path().string(), restrictedFunctions, slack);
   
     problem.makeMaxOrder();
-  
+    
     switch (type)
     {
       case 0:
@@ -213,9 +224,8 @@ int main(int argc, char *argv[])
         NormalSolution sol(problem);
         
         sol.generateSolutin();
-        
-        std::cout<<sol.getSolutionSize() <<std::endl;
-        std::cout<<sol.getRuntime() <<std::endl;
+  
+        manager.addSolution(sol);
         break;
       }
       case 1:
@@ -226,11 +236,27 @@ int main(int argc, char *argv[])
         
         sol.generateSolutin();
   
-        std::cout<<sol.getSolutionSize() <<std::endl;
-        std::cout<<sol.getRuntime() <<std::endl;
+        manager.addSolution(sol);
         break;
       }
       case 2:
+      {
+        NormalSolution normalSol(problem);
+  
+        normalSol.generateSolutin();
+  
+        problem.reverseElements();
+  
+        RestrictedSolution restSol(problem);
+  
+        restSol.generateSolutin();
+        
+        manager.addSolution(normalSol);
+        
+        secondManager.addSolution(restSol);
+        break;
+      }
+      case 3:
       {
         checkCorrectness(problem);
         break;
@@ -238,6 +264,15 @@ int main(int argc, char *argv[])
       default:
         std::cout<<"wrong argument"<<std::endl;
     }
+  }
+  
+  manager.printStatistics(printSolutions);
+  
+  if(type == 2)
+  {
+    secondManager.printStatistics(printSolutions);
+    
+    secondManager.printCompareToOtherSolutions(manager, false);
   }
   return 0;
 }

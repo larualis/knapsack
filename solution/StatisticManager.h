@@ -21,13 +21,19 @@ private:
 
   float countKnapsack_;
   
+  std::string pathToFiles_;
+  
 public:
   
-  StatisticManager();
+  StatisticManager(std::string pathToFiles);
   
   void addSolution(Solution& sol);
   
   void printStatistics(bool printValues);
+  
+  void writeStatistics();
+  
+  void readFromFile(std::string pathToFile);
   
   const std::vector<int> &getSolutionSize() const;
   

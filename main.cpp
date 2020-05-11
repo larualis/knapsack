@@ -165,10 +165,12 @@ int main(int argc, char *argv[])
   /**
    * input of type: ../directory to files --Type= --ResFunc=
    * /directory to files contains all knapsack problem which should be solved, they should be similar
-   * --Type= 0 normal 1 restricted 2 check correctness
+   * --Type= 0 normal 1 restricted 2 compare 3 verifyResults
    * --ResFunc= number of Functions which should be restricted format: 1,3,6
    **/
-  int type = 0;
+  enum Type {normal, restricted, compare, verifyResults};
+  
+  Type type = Type::normal;
   
   std::vector<int> restrictedFunctions;
   
@@ -182,7 +184,7 @@ int main(int argc, char *argv[])
     
     if (input.find("--Type=")!= std::string::npos)
     {
-      type = std::stoi(input.substr(input.find('=') + 1));
+      type = static_cast<Type>(std::stoi(input.substr(input.find('=') + 1)));
     }
   
     if (input.find("--ResFunc=")!= std::string::npos)
@@ -207,30 +209,42 @@ int main(int argc, char *argv[])
     }
   }
   
-  StatisticManager manager, secondManager;
+  StatisticManager manager(pathToFiles);
+  
+  StatisticManager secondManager(pathToFiles);
+  
+  int numberOfKnapsacksToSolve = 0;
   
   for (const auto & entry : std::filesystem::directory_iterator(pathToFiles))
   {
-    std::cout<<"solve Knapsack: "<<manager.getRuntime().size() + 1<<"\r"<<"\n"<<std::flush;
+    if(entry.path().string().find("knapsack") != std::string::npos)
+    {
+      ++numberOfKnapsacksToSolve;
+    }
+  }
+  
+  for (int numberKnapsack = 1; numberKnapsack <= numberOfKnapsacksToSolve; ++numberKnapsack)
+  {
+    std::cout<<"solve Knapsack: "<<numberKnapsack<<"\r"<<"\n"<<std::flush;
     
     std::vector<float> slack {0.8};
     
-    Problem problem(entry.path().string(), restrictedFunctions, slack);
+    Problem problem(pathToFiles + "/knapsack" + std::to_string(numberKnapsack) + ".txt", restrictedFunctions, slack);
   
     problem.makeMaxOrder();
     
     switch (type)
     {
-      case 0:
+      case normal:
       {
         NormalSolution sol(problem);
         
         sol.generateSolutin();
-  
+        
         manager.addSolution(sol);
         break;
       }
-      case 1:
+      case restricted:
       {
         problem.reverseElements();
   
@@ -241,41 +255,65 @@ int main(int argc, char *argv[])
         manager.addSolution(sol);
         break;
       }
-      case 2:
+      case compare:
       {
-        NormalSolution normalSol(problem);
+        if(!std::filesystem::exists(pathToFiles + "/results_normal.txt"))
+        {
+          NormalSolution normalSol(problem);
   
-        normalSol.generateSolutin();
+          normalSol.generateSolutin();
   
+          manager.addSolution(normalSol);
+        }
+        
         problem.reverseElements();
   
         RestrictedSolution restSol(problem);
   
         restSol.generateSolutin();
         
-        manager.addSolution(normalSol);
-        
         secondManager.addSolution(restSol);
         break;
       }
-      case 3:
+      case verifyResults:
       {
         checkCorrectness(problem);
         break;
       }
       default:
         std::cout<<"wrong argument"<<std::endl;
+        return 0;
     }
   }
   
-  manager.printStatistics(printSolutions);
-  
-  if(type == 2)
+  if(type != Type::compare)
   {
+    manager.printStatistics(printSolutions);
+  }
+  
+  if(type == Type::normal)
+  {
+    manager.writeStatistics();
+  }
+  
+  if(type == Type::compare)
+  {
+    if(std::filesystem::exists(pathToFiles + "/results_normal.txt"))
+    {
+      manager.readFromFile(pathToFiles + "/results_normal.txt");
+    }
+    else
+    {
+      manager.writeStatistics();
+    }
+    
+    manager.printStatistics(printSolutions);
+    
     secondManager.printStatistics(printSolutions);
     
     secondManager.printCompareToOtherSolutions(manager, false);
   }
+
   return 0;
 }
 

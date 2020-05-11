@@ -34,8 +34,8 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
   {
     //init
     ++numberOfCurrentElement;
-    
-    std::cout<<numberOfCurrentElement<<"\n";
+  
+    std::cout<<numberOfCurrentElement<<"\r"<<std::flush;
   
     int numberOfPreviousSolutions = pruningValues_[numberOfCurrentElement - 1]->size();
   

@@ -46,7 +46,7 @@ void DP::run()
   {
     counter++;
     
-    std::cout<<counter<<"\n";
+    std::cout<<counter<<"\r"<<std::flush;
     
     int i = 0;
     
@@ -99,7 +99,9 @@ void DP::run()
     
     if(weightOfRemainingElements == 0)
     {
-      finalSol = std::move(compareSol);
+      std::vector finalSol (compareSol.begin(), compareSol.end());
+      
+      solutions_ = std::move(finalSol);
     }
     
     else
@@ -230,7 +232,7 @@ void DP::run()
 }
 
 
-void DP::maintainNonDominated(std::vector<float> &newSolution, int validRound, std::list<std::vector<float>> &compareSol, int counter, int startValue)
+void DP::maintainNonDominated(std::vector<float> &newSolution, int validRound, std::list<std::vector<float>> &compareSol, int counter, int& startValue)
 {
   bool newSolutionIsGreater = false;
   
@@ -413,9 +415,33 @@ std::vector<float> DP::upperBound(std::vector<float> &sol)
   return rval;
 }
 
-bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int startValue, int &validForRounds)
+bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int& startValue, int &validForRounds)
 {
   bool weightIsGreater = false;
+  
+  //todo: experimental
+  if(true and functionsRestricted_.size() == 1)
+  {
+    for (auto pruneSol = pruningValues_[elementManager_.getNumberOfElements() - counter]->rbegin() + startValue; pruneSol != pruningValues_[elementManager_.getNumberOfElements() - counter]->rend(); ++pruneSol)
+    {
+      if (pruneSol->weight_ >= sol.front())
+      {
+        if( pruneSol->solutionValues_.back() <= sol[functionsRestricted_[0]])
+        {
+          validForRounds = pruneSol->relevantRounds_;
+          return true;
+        }
+        else
+        {
+          return false;
+        }
+      }
+      else
+      {
+        ++startValue;
+      }
+    }
+  }
   
   for (auto pruneSol = pruningValues_[elementManager_.getNumberOfElements() - counter]->rbegin() + startValue; pruneSol != pruningValues_[elementManager_.getNumberOfElements() - counter]->rend(); ++pruneSol)
   {
@@ -493,9 +519,4 @@ bool DP::dlex(std::vector<float> &sol1, std::vector<float> &sol2)
 const std::vector<std::vector<float>> &DP::getSolutions() const
 {
   return solutions_;
-}
-
-const std::list<std::vector<float>> &DP::getFinalSol() const
-{
-  return finalSol;
 }

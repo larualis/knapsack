@@ -1,11 +1,14 @@
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <vector>
-#include <chrono>
 #include <cmath>
 #include "DP.h"
 #include "Problem.h"
 #include "revDP.h"
+#include "solution/NormalSolution.h"
+#include "solution/RestrictedSolution.h"
+#include "solution/StatisticManager.h"
 
 template <class x>
 void printVector(std::vector<x> vec)
@@ -15,86 +18,6 @@ void printVector(std::vector<x> vec)
     std::cout << ele << " ";
   }
   std::cout << std::endl;
-}
-
-void advancedPruning(Problem &Problem)
-{
-  //! restricted DP and data extraction
-  auto t1 = std::chrono::high_resolution_clock::now();
-  
-  std::vector<float> minimalFunctionValues(Problem.getRestrictedFunctions().size(), 0);
-  
-  for (int i = 0; i < Problem.getRestrictedFunctions().size(); ++i)
-  {
-    DP restrictedDP(Problem, std::vector<int> {Problem.getRestrictedFunctions()[i]});
-  
-    restrictedDP.run();
-  
-    auto solutions = restrictedDP.getFinalSol();
-  
-    for (auto sol: solutions)
-    {
-      if(minimalFunctionValues[i] < sol[1])
-      {
-        minimalFunctionValues[i] = sol[1];
-      }
-    }
-  }
-  
-  for (int i = 0; i < minimalFunctionValues.size(); ++i )
-  {
-    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] * Problem.getSlack()[i]);
-  }
-  std::cout<<"vector for calc"<<std::endl;
-  
-  printVector<float>(minimalFunctionValues);
-  
-  //! rev DP
-  revDP rDP(Problem, minimalFunctionValues);
-  
-  auto pruningValues = rDP.run();
-  
-  //! final DP
-  DP finalDP(Problem, pruningValues);
-  
-  finalDP.run();
-  
-  auto t2 = std::chrono::high_resolution_clock::now();
-  
-  auto finaleSolution = finalDP.getFinalSol();
-  
-  for (auto sol: finaleSolution)
-  {
-    printVector<float>(sol);
-  }
-  
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
-  
-  std::cout <<"Took: " << duration <<"\n";
-  
-  std::cout <<"found Solutions: " << finaleSolution.size() <<"\n";
-}
-
-void standartDP(Problem &Problem, std::vector<int> functionsToCompare)
-{
-  DP dp(Problem, functionsToCompare);
-  
-  auto t1 = std::chrono::high_resolution_clock::now();
-  dp.run();
-  auto t2 = std::chrono::high_resolution_clock::now();
-  
-  
-  auto finaleSolution = dp.getFinalSol();
-  
-  for (auto &sol: finaleSolution)
-  {
-    printVector<float>(sol);
-  }
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
-  
-  std::cout <<"Took: " << duration <<"\n";
-  
-  std::cout <<"found Solutions: " << finaleSolution.size() <<"\n";
 }
 
 void checkCorrectness(Problem &problem)
@@ -110,7 +33,7 @@ void checkCorrectness(Problem &problem)
     
     restrictedDP.run();
     
-    auto solutions = restrictedDP.getFinalSol();
+    auto solutions = restrictedDP.getSolutions();
     
     for (auto sol: solutions)
     {
@@ -123,7 +46,7 @@ void checkCorrectness(Problem &problem)
   
   for (int i = 0; i < minimalFunctionValues.size(); ++i )
   {
-    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] * problem.getSlack()[i]);
+    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] - problem.getSlack()[i]);
   }
   std::cout<<"vector for calc"<<std::endl;
   
@@ -139,7 +62,7 @@ void checkCorrectness(Problem &problem)
   
   finalDP.run();
   
-  auto finaleSolutionRev = finalDP.getFinalSol();
+  auto finaleSolutionRev = finalDP.getSolutions();
   
   //!begin normal
   problem.reverseElements();
@@ -155,7 +78,7 @@ void checkCorrectness(Problem &problem)
   
   dp.run();
   
-  std::list< std::vector<float> > finaleSolution = dp.getFinalSol();
+  std::vector< std::vector<float> > finaleSolution = dp.getSolutions();
   
   //!remove solutions that don't fit criteria
   auto sol = finaleSolution.begin();
@@ -235,50 +158,162 @@ void checkCorrectness(Problem &problem)
       std::cout<<"Solutions match"<<std::endl;
     }
   }
-};
+}
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
-  //!input
-  std::vector<int> restrictedFunctions {1,2};
+  /**
+   * input of type: ../directory to files --Type= --ResFunc=
+   * /directory to files contains all knapsack problem which should be solved, they should be similar
+   * --Type= 0 normal 1 restricted 2 compare 3 verifyResults
+   * --ResFunc= number of Functions which should be restricted format: 1,3,6
+   **/
+  enum Type {normal, restricted, compare, verifyResults};
   
-  std::vector<float> slack {0.95,0.8};
+  Type type = Type::normal;
   
-  std::string data = "../python/knapsack.txt";
+  std::vector<int> restrictedFunctions;
   
-  Problem problem(data, 3, restrictedFunctions, slack);
+  bool printSolutions = false;
   
-  problem.makeMaxOrder();
+  std::string pathToFiles(argv[1]);
   
-  switch (std::stoi(argv[1]))
+  for(int i = 1; i < argc; ++i)
   {
-    case 0:
+    std::string input (argv[i]);
+    
+    if (input.find("--Type=")!= std::string::npos)
+    {
+      type = static_cast<Type>(std::stoi(input.substr(input.find('=') + 1)));
+    }
+  
+    if (input.find("--ResFunc=")!= std::string::npos)
+    {
+      std::string resFunc = (input.substr(input.find('=') + 1));
+      //!can only handle numbers 1 to 9
+      for(char const &c : resFunc)
       {
-        std::vector<int> functionsToCompare(problem.getNumberOfFunctions(), 0);
-  
-        for (int i = 0; i < problem.getNumberOfFunctions(); ++i)
+        if(c!=',')
         {
-          functionsToCompare[i] = i + 1;
+          restrictedFunctions.push_back(c - '0');
         }
+      }
+    }
   
-        standartDP(problem, functionsToCompare);
+    if (input.find("--PrintSolution=")!= std::string::npos)
+    {
+      if("true" == input.substr(input.find('=') + 1))
+      {
+        printSolutions = true;
+      }
+    }
+  }
+  
+  StatisticManager manager(pathToFiles);
+  
+  StatisticManager secondManager(pathToFiles);
+  
+  int numberOfKnapsacksToSolve = 0;
+  
+  for (const auto & entry : std::filesystem::directory_iterator(pathToFiles))
+  {
+    if(entry.path().string().find("knapsack") != std::string::npos)
+    {
+      ++numberOfKnapsacksToSolve;
+    }
+  }
+  
+  for (int numberKnapsack = 1; numberKnapsack <= numberOfKnapsacksToSolve; ++numberKnapsack)
+  {
+    std::cout<<"solve Knapsack: "<<numberKnapsack<<"\r"<<"\n"<<std::flush;
+    
+    std::vector<float> slack {0.8};
+    
+    Problem problem(pathToFiles + "/knapsack" + std::to_string(numberKnapsack) + ".txt", restrictedFunctions, slack);
+  
+    problem.makeMaxOrder();
+    
+    switch (type)
+    {
+      case normal:
+      {
+        NormalSolution sol(problem);
+        
+        sol.generateSolutin();
+        
+        manager.addSolution(sol);
         break;
       }
-    case 1:
+      case restricted:
       {
         problem.reverseElements();
+  
+        RestrictedSolution sol(problem);
         
-        advancedPruning(problem);
+        sol.generateSolutin();
+  
+        manager.addSolution(sol);
         break;
       }
-    case 2:
-    {
-      checkCorrectness(problem);
-      break;
+      case compare:
+      {
+        if(!std::filesystem::exists(pathToFiles + "/results_normal.txt"))
+        {
+          NormalSolution normalSol(problem);
+  
+          normalSol.generateSolutin();
+  
+          manager.addSolution(normalSol);
+        }
+        
+        problem.reverseElements();
+  
+        RestrictedSolution restSol(problem);
+  
+        restSol.generateSolutin();
+        
+        secondManager.addSolution(restSol);
+        break;
+      }
+      case verifyResults:
+      {
+        checkCorrectness(problem);
+        break;
+      }
+      default:
+        std::cout<<"wrong argument"<<std::endl;
+        return 0;
     }
-    default:
-      std::cout<<"wrong argument"<<std::endl;
   }
+  
+  if(type != Type::compare)
+  {
+    manager.printStatistics(printSolutions);
+  }
+  
+  if(type == Type::normal)
+  {
+    manager.writeStatistics();
+  }
+  
+  if(type == Type::compare)
+  {
+    if(std::filesystem::exists(pathToFiles + "/results_normal.txt"))
+    {
+      manager.readFromFile(pathToFiles + "/results_normal.txt");
+    }
+    else
+    {
+      manager.writeStatistics();
+    }
+    
+    manager.printStatistics(printSolutions);
+    
+    secondManager.printStatistics(printSolutions);
+    
+    secondManager.printCompareToOtherSolutions(manager, false);
+  }
+
   return 0;
 }
 

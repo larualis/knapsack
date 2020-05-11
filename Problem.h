@@ -44,9 +44,9 @@ private:
   void readData(std::string& filename, std::vector<std::vector<float>>& rawElements);
   
 public:
-  Problem(std::string filename, float capacity, int numberOfFunctions, std::vector<int> restrictedFunctions, std::vector<float> slack);
+  Problem(std::string filename, float capacity, std::vector<int> restrictedFunctions, std::vector<float> slack);
   
-  Problem(std::string filename, int numberOfFunctions, std::vector<int> restrictedFunctions, std::vector<float> slack);
+  Problem(std::string filename, std::vector<int> restrictedFunctions, std::vector<float> slack);
   
   void reverseElements();
   

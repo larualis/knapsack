@@ -6,7 +6,6 @@
 
 #include <cmath>
 #include <utility>
-#include <cmath>
 #include <sstream>
 
 Problem::Problem(std::string filename, float capacity,
@@ -15,7 +14,7 @@ Problem::Problem(std::string filename, float capacity,
                  restrictedFunctions_(std::move(restrictedFunctions)),
                  slack_(std::move(slack))
 {
-  std::vector<std::vector<float>> rawElements;
+  std::vector<std::vector<int>> rawElements;
   
   readData(filename, rawElements);
   
@@ -36,7 +35,7 @@ Problem::Problem(std::string filename,
     restrictedFunctions_(std::move(restrictedFunctions)),
     slack_(std::move(slack))
 {
-  std::vector<std::vector<float>> rawElements;
+  std::vector<std::vector<int>> rawElements;
   
   readData(filename, rawElements);
   
@@ -67,12 +66,12 @@ Problem::Problem(std::string filename,
   
   for(auto &val : slack_)
   {
-    //!this should be average value * 10% of number of Elements, should also include number of restrited functions
-    val = (val / (float) eleManager_.getNumberOfElements()) * (float) eleManager_.getNumberOfElements() * 0.6 * 0.1;
+    //!this should be average value * 10% of number of Elements, should also include number of restricted functions
+    val = (val / (float) eleManager_.getNumberOfElements()) * (float) eleManager_.getNumberOfElements() * 0.6 * 0.05;
   }
 }
 
-void Problem::readData(std::string& filename, std::vector<std::vector<float>>& rawElements)
+void Problem::readData(std::string& filename, std::vector<std::vector<int>>& rawElements)
 {
   std::ifstream file;
   
@@ -82,7 +81,7 @@ void Problem::readData(std::string& filename, std::vector<std::vector<float>>& r
   
   while(std::getline(file, line))
   {
-    std::vector<float> element;
+    std::vector<int> element;
     
     std::stringstream ss(line);
     
@@ -120,7 +119,7 @@ void Problem::reverseElements()
   eleManager_.reverseElements();
 }
 
-float Problem::getCapacity() const
+int Problem::getCapacity() const
 {
   return capacity_;
 }
@@ -140,7 +139,7 @@ const std::vector<float> &Problem::getSlack() const
   return slack_;
 }
 
-float Problem::getSumOfWeights() const
+int Problem::getSumOfWeights() const
 {
   return sumOfWeights_;
 }

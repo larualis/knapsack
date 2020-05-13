@@ -22,6 +22,7 @@ void printVector(std::vector<x> vec)
 
 void checkCorrectness(Problem &problem)
 {
+  /**
   //! restricted DP and data extraction
   problem.reverseElements();
   
@@ -158,6 +159,7 @@ void checkCorrectness(Problem &problem)
       std::cout<<"Solutions match"<<std::endl;
     }
   }
+   **/
 }
 
 int main(int argc, char *argv[])
@@ -230,6 +232,13 @@ int main(int argc, char *argv[])
     std::vector<float> slack {0.8};
     
     Problem problem(pathToFiles + "/knapsack" + std::to_string(numberKnapsack) + ".txt", restrictedFunctions, slack);
+    
+    if(problem.getNumberOfFunctions() != NUMBEROFFUNCTIONS)
+    {
+      std::cout<<"change macro number of functions to match input";
+      
+      return 0;
+    }
   
     problem.makeMaxOrder();
     

@@ -17,7 +17,7 @@ protected:
   
   int runtime_;
   
-  std::vector<std::vector<float>> solutions_;
+  std::vector<static_vector> solutions_;
   
 public:
   
@@ -37,7 +37,7 @@ public:
     return solutions_.size();
   }
   
-  const std::vector<std::vector<float>> &getSolutions() const
+  const std::vector<static_vector> &getSolutions() const
   {
     return solutions_;
   }

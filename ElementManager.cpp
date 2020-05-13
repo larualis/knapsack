@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "ElementManager.h"
 
-ElementManager::ElementManager(std::vector<std::vector<float>> rawElements, int numberOfElements, int numberOfFunctions):
+ElementManager::ElementManager(std::vector<std::vector<int>> rawElements, int numberOfElements, int numberOfFunctions):
 numberOfElements_(numberOfElements),
 numberOfFunctions_(numberOfFunctions)
 {
@@ -51,11 +51,11 @@ void ElementManager::generateOrder()
   //!generate orderedRawElementsValue_
   for (int i = 0; i < numberOfFunctions_; ++i)
   {
-    std::vector<std::vector<float>> rawElements(numberOfElements_, std::vector<float>(numberOfFunctions_, 0));
+    std::vector<static_vector> rawElements(numberOfElements_, static_vector(numberOfFunctions_, 0));
     
     for (auto &ele : elements_)
     {
-      std::vector<float> rawElement;
+      static_vector rawElement;
       
       rawElement.push_back(ele.weight_);
       
@@ -66,9 +66,6 @@ void ElementManager::generateOrder()
   
     orderedRawElementsValue_.emplace_back(rawElements);
   }
-  
-  //!generate orderedRawElementsPointer_
-  updateOrderedRawElementsPointer_();
 }
 
 
@@ -95,8 +92,6 @@ void ElementManager::makeSumOrder()
   }
   
   elements_ = std::move(sortedElements);
-  
-  updateOrderedRawElementsPointer_();
 }
 
 void ElementManager::makeMaxOrder()
@@ -134,8 +129,6 @@ void ElementManager::makeMaxOrder()
   }
   
   elements_ = std::move(sortedElements);
-  
-  updateOrderedRawElementsPointer_();
 }
 
 void ElementManager::makeMinOrder()
@@ -173,25 +166,6 @@ void ElementManager::makeMinOrder()
   }
   
   elements_ = std::move(sortedElements);
-  
-  updateOrderedRawElementsPointer_();
-}
-
-void ElementManager::updateOrderedRawElementsPointer_()
-{
-  orderedRawElementsPointer_.clear();
-  
-  for (int i = 0; i < numberOfFunctions_; ++i)
-  {
-    std::vector<element*> vec(numberOfElements_, nullptr);
-    
-    for (auto &ele : elements_)
-    {
-      vec[ele.posOrderValueWeightRatio_[i] - 1] = &ele;
-    }
-    
-    orderedRawElementsPointer_.emplace_back(vec);
-  }
 }
 
 void ElementManager::removeElementFromOrder(int elementNumber)
@@ -202,12 +176,6 @@ void ElementManager::removeElementFromOrder(int elementNumber)
   {
     orderedRawElementsValue_[i].erase(orderedRawElementsValue_[i].begin() + posOfElementToRemove[i] - 1);
   }
-  /*
-  for(int i = 0; i < numberOfFunctions_; ++i)
-  {
-    orderedRawElementsPointer_[i].erase(orderedRawElementsPointer_[i].begin() + posOfElementToRemove[i] - 1);
-  }
-   */
   
   for(auto ele = elements_.begin() + elementNumber; ele != elements_.end(); ++ele)
   {
@@ -221,14 +189,11 @@ void ElementManager::removeElementFromOrder(int elementNumber)
       }
     }
   }
-  
 }
 
 void ElementManager::reverseElements()
 {
   reverse(elements_.begin(),elements_.end());
-  
-  updateOrderedRawElementsPointer_();
 }
 
 std::vector<element> &ElementManager::getElements()
@@ -236,12 +201,7 @@ std::vector<element> &ElementManager::getElements()
   return elements_;
 }
 
-const std::vector<std::vector<element *>> &ElementManager::getOrderedRawElementsPointer() const
-{
-  return orderedRawElementsPointer_;
-}
-
-const std::vector<std::vector<std::vector<float>>> &ElementManager::getOrderedRawElementsValue() const
+const std::vector<std::vector<static_vector>> &ElementManager::getOrderedRawElementsValue() const
 {
   return orderedRawElementsValue_;
 }

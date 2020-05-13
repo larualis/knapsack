@@ -17,7 +17,7 @@ private:
   
   std::vector<int> solutionSize_;
   
-  std::list<std::vector<std::vector<float>>> solutions_;
+  std::list<std::vector<static_vector>> solutions_;
 
   float countKnapsack_;
   

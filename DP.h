@@ -10,7 +10,6 @@
 #include <list>
 #include "Problem.h"
 #include "revDP.h"
-#include "restrictedKnapsackVerifier.h"
 #include <memory>
 
 class DP
@@ -20,17 +19,15 @@ private:
   
   ElementManager elementManager_;
   
-  float capacity_;
+  int capacity_;
  
   int numberOfFunctions_;
   
   std::vector<int> functionsToCompare_;
   
-  restrictedKnapsackVerifier restKnap;
-  
   std::vector<int> functionsRestricted_;
   
-  std::vector<std::vector<float>> solutions_;
+  std::vector<static_vector> solutions_;
   
   std::vector<int> validRounds_;
 
@@ -45,23 +42,23 @@ public:
   
   void run();
   
-  const std::vector<std::vector<float>> &getSolutions() const;
+  const std::vector<static_vector>& getSolutions() const;
 
 private:
   
-  bool dominates(std::vector<float>& sol1, std::vector<float>& sol2, bool lastElement);
+  bool dominates(static_vector& sol1, static_vector& sol2, bool lastElement);
   
-  bool isValidAccordingToPruning(std::vector<float> &sol, int counter, int& starValue, int &validForRounds);
+  bool isValidAccordingToPruning(static_vector& sol, int counter, int& starValue, int &validForRounds);
   
-  bool dlex(std::vector<float> &sol1, std::vector<float> &sol2);
+  bool dlex(static_vector& sol1, static_vector& sol2);
   
-  bool lex(std::vector<float> &sol1, std::vector<float> &sol2);
+  bool lex(static_vector& sol1, static_vector& sol2);
   
-  void maintainNonDominated(std::vector<float>& solution, int validRound, std::list<std::vector<float>>& compareSol, int counter, int& startValue);
+  void maintainNonDominated(static_vector& solution, int validRound, std::list<static_vector>& compareSol, int counter, int& startValue);
   
-  void keepNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol);
+  void keepNonDominated(static_vector& newSolution, std::list<static_vector>& compareSol);
   
-  std::vector<float> upperBound(std::vector<float> &sol);
+  static_vector upperBound(static_vector &sol);
 };
 
 

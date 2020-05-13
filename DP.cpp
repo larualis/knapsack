@@ -14,12 +14,12 @@ DP::DP(Problem& problem, std::vector<std::shared_ptr<std::vector<PruningSolution
     capacity_(problem.getCapacity()),
     numberOfFunctions_(problem.getNumberOfFunctions()),
     functionsRestricted_(problem.getRestrictedFunctions()),
-    restKnap(pruningValues, problem.getRestrictedFunctions()),
     pruningValues_(std::move(pruningValues))
 {
-  solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
+  solutions_.emplace_back(static_vector(numberOfFunctions_ + 1,0));
+  
   validRounds_.push_back(0);
-  functionsToCompare_.reserve(numberOfFunctions_);
+  
   for(int i = 1; i <= numberOfFunctions_; ++i)
   {
     functionsToCompare_.push_back(i);
@@ -33,7 +33,8 @@ DP::DP(Problem &problem, std::vector<int> functionsToCompare):
     numberOfFunctions_(functionsToCompare.size()),
     functionsToCompare_(functionsToCompare)
 {
-  solutions_.emplace_back(std::vector<float> (numberOfFunctions_ + 1, 0));
+  solutions_.emplace_back(static_vector(numberOfFunctions_ + 1,0));
+  
   validRounds_.push_back(0);
 }
 
@@ -41,7 +42,7 @@ void DP::run()
 {
   int numberOfCurrentElement = 0;
   
-  float weightOfRemainingElements = problem_.getSumOfWeights();
+  int weightOfRemainingElements = problem_.getSumOfWeights();
   
   for (const auto & element : elementManager_.getElements())
   {
@@ -55,9 +56,9 @@ void DP::run()
     //! j in paper
     int idxOldSolution = 0;
     
-    std::vector<std::vector<float>> previousSolutions = std::move(solutions_);
+    std::vector<static_vector> previousSolutions = std::move(solutions_);
     
-    std::list<std::vector<float>> compareSol;
+    std::list<static_vector> compareSol;
     
   
     std::vector<int> validPreviousRounds = std::move(validRounds_);
@@ -72,7 +73,7 @@ void DP::run()
     
     while (idxNewSolution < previousSolutions.size() and previousSolutions[idxNewSolution][0] + element.weight_ <= capacity_)
     {
-      std::vector<float> newSolution(numberOfFunctions_ + 1, 0);
+      static_vector newSolution(numberOfFunctions_ + 1,0);
       
       newSolution[0] = previousSolutions[idxNewSolution][0] + element.weight_;
       
@@ -120,7 +121,7 @@ void DP::run()
       //! sort remaining elements
       std::vector<elementWithOrderValue> maxOrder;
   
-      maxOrder.reserve(elementManager_.getElements().size() - numberOfCurrentElement);
+      maxOrder.reserve(elementManager_.getNumberOfElements() - numberOfCurrentElement);
       
       std::vector<elementWithOrderValue> sumOrder = maxOrder;//todo: element with value should use direct value and not pointer
       
@@ -147,7 +148,7 @@ void DP::run()
           }
         }
   
-        val += sum / (float)( elementManager_.getElements().size() * numberOfFunctions_);
+        val += sum / (float)( elementManager_.getNumberOfElements() * numberOfFunctions_);
         
         maxOrder.emplace_back(&(*ele), val);
       }
@@ -157,7 +158,7 @@ void DP::run()
       std::sort(maxOrder.begin(), maxOrder.end());
       
       //!generate set F from paper
-      std::list<std::vector<float>> compareSolF;
+      std::list<static_vector> compareSolF;
       
       for (auto sol: compareSol)
       {
@@ -198,7 +199,7 @@ void DP::run()
       
       for (auto &sol: solutions_)
       {
-        std::vector<float> upperBoundOfSol(upperBound(sol));
+        static_vector upperBoundOfSol(upperBound(sol));
         
         bool remove = false;
         
@@ -239,7 +240,7 @@ void DP::run()
 }
 
 
-void DP::maintainNonDominated(std::vector<float> &solution, int validRound, std::list<std::vector<float>> &compareSol, int counter, int& startValue)
+void DP::maintainNonDominated(static_vector& solution, int validRound, std::list<static_vector> &compareSol, int counter, int& startValue)
 {
   bool addSolution = true;
   
@@ -303,7 +304,7 @@ void DP::maintainNonDominated(std::vector<float> &solution, int validRound, std:
   }
 }
 //todo: should be rewritten according to maintainNonDoniated
-void DP::keepNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol)
+void DP::keepNonDominated(static_vector &newSolution, std::list<static_vector> &compareSol)
 {
   bool newSolutionIsGreater = false;
   
@@ -349,9 +350,9 @@ void DP::keepNonDominated(std::vector<float> &newSolution, std::list<std::vector
   }
 }
 
-std::vector<float> DP::upperBound(std::vector<float> &sol)
+static_vector DP::upperBound(static_vector &sol)
 {
-  std::vector<float> rval = sol;
+  static_vector rval = sol;
   
   for (int pos = 1; pos <= functionsToCompare_.size(); ++pos)
   {
@@ -411,7 +412,7 @@ std::vector<float> DP::upperBound(std::vector<float> &sol)
   return rval;
 }
 
-bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int& startValue, int &validForRounds)
+bool DP::isValidAccordingToPruning(static_vector &sol, int counter, int& startValue, int &validForRounds)
 {
   bool weightIsGreater = false;
   
@@ -472,7 +473,7 @@ bool DP::isValidAccordingToPruning(std::vector<float> &sol, int counter, int& st
   return false;
 }
 
-bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool lastElement)
+bool DP::dominates(static_vector &sol1, static_vector &sol2, bool lastElement)
 {
   if(!lastElement and sol1[0] > sol2[0])
   {
@@ -490,7 +491,7 @@ bool DP::dominates(std::vector<float> &sol1, std::vector<float> &sol2, bool last
   return true;
 }
 
-bool DP::lex(std::vector<float> &sol1, std::vector<float> &sol2)
+bool DP::lex(static_vector &sol1, static_vector &sol2)
 {
   if (sol1[0] < sol2[0])
   {
@@ -500,7 +501,7 @@ bool DP::lex(std::vector<float> &sol1, std::vector<float> &sol2)
   return sol1[0] == sol2[0] and dlex(sol1, sol2);
 }
 
-bool DP::dlex(std::vector<float> &sol1, std::vector<float> &sol2)
+bool DP::dlex(static_vector &sol1, static_vector &sol2)
 {
   for (int i = 1; i <= numberOfFunctions_; ++i)
   {
@@ -512,7 +513,7 @@ bool DP::dlex(std::vector<float> &sol1, std::vector<float> &sol2)
   return true;
 }
 
-const std::vector<std::vector<float>> &DP::getSolutions() const
+const std::vector<static_vector>& DP::getSolutions() const
 {
   return solutions_;
 }

@@ -5,13 +5,16 @@
 #ifndef KNAPSACK_ELEMENTMANAGER_H
 #define KNAPSACK_ELEMENTMANAGER_H
 
+#define NUMBEROFFUNCTIONS 3
+#include <boost/container/static_vector.hpp>
+using static_vector = boost::container::static_vector<int, NUMBEROFFUNCTIONS + 1>;
+
 #include <vector>
 #include <list>
-#include <bits/unique_ptr.h>
 
 struct element
 {
-  std::vector<float> values_;
+  std::vector<int> values_;
   
   int weight_;
   
@@ -21,7 +24,7 @@ struct element
   
   int SumOfposOrderValueWeightRatio_;
   
-  explicit element(std::vector<float>& rawElement):
+  explicit element(std::vector<int>& rawElement):
       weight_(rawElement.front()),
       SumOfposOrderValueWeightRatio_(0),
       values_(rawElement.begin() + 1, rawElement.end())
@@ -32,7 +35,7 @@ struct element
     
     for( auto val: values_)
     {
-      valueWeightRatios_.push_back(val / weight_);
+      valueWeightRatios_.push_back((float) val / (float) weight_);
     }
   }
 };
@@ -62,12 +65,10 @@ private:
   
   int numberOfFunctions_;
   
-  std::vector<std::vector<element*>> orderedRawElementsPointer_;
-  
-  std::vector<std::vector<std::vector<float>>> orderedRawElementsValue_;
+  std::vector<std::vector<static_vector>> orderedRawElementsValue_;
   
 public:
-  ElementManager(std::vector<std::vector<float>> rawElements, int numberOfElements, int numberOfFunctions);
+  ElementManager(std::vector<std::vector<int>> rawElements, int numberOfElements, int numberOfFunctions);
   
   ElementManager() {};
   
@@ -83,17 +84,11 @@ public:
   
   void makeMinOrder();
   
-  const std::vector<std::vector<std::vector<float>>> &getOrderedRawElementsValue() const;
-  
-  const std::vector<std::vector<element *>> &getOrderedRawElementsPointer() const;
+  const std::vector<std::vector<static_vector>> &getOrderedRawElementsValue() const;
   
   std::vector<element> &getElements();
   
   int getNumberOfElements() const;
-
-private:
-  
-  void updateOrderedRawElementsPointer_();
   
 };
 

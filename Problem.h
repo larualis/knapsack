@@ -15,11 +15,11 @@ class Problem
 {
 private:
   
-  float capacity_;
+  int capacity_;
   
   int numberOfFunctions_;
   
-  float sumOfWeights_;
+  int sumOfWeights_;
   
   std::vector<int> restrictedFunctions_;
   
@@ -29,11 +29,11 @@ private:
 public:
   ElementManager &getEleManager();
 
-  float getCapacity() const;
+  int getCapacity() const;
   
   int getNumberOfFunctions() const;
   
-  float getSumOfWeights() const;
+  int getSumOfWeights() const;
   
   const std::vector<int> &getRestrictedFunctions() const;
   
@@ -41,7 +41,7 @@ public:
 
 private:
   
-  void readData(std::string& filename, std::vector<std::vector<float>>& rawElements);
+  void readData(std::string& filename, std::vector<std::vector<int>>& rawElements);
   
 public:
   Problem(std::string filename, float capacity, std::vector<int> restrictedFunctions, std::vector<float> slack);

@@ -6,29 +6,27 @@
 #include <iostream>
 #include "revDP.h"
 
-revDP::revDP(Problem& problem, std::vector<float> baseValues):
-  problem_(problem),
-  elementManager_(problem.getEleManager()),
-  capacity_(problem.getCapacity()),
-  functionSubset_(problem.getRestrictedFunctions()),
-  numberOfFunctions_(problem.getRestrictedFunctions().size())
+revDP::revDP(Problem& problem, std::vector<int> baseValues):
+    problem_(problem),
+    elementManager_(problem.getEleManager()),
+    capacity_(problem.getCapacity()),
+    functionsRestricted_(problem.getRestrictedFunctions()),
+    numberOfFunctions_(problem.getRestrictedFunctions().size())
   {
-    baseValues.emplace(baseValues.begin(), capacity_);
+    static_vector start(baseValues.begin(), baseValues.end());
+    
+    start.emplace(start.begin(), capacity_);
     
     pruningValues_.reserve(elementManager_.getNumberOfElements() + 1);
-  
-    std::shared_ptr<std::vector<PruningSolution>> shr = std::make_shared<std::vector<PruningSolution>>();
     
-    pruningValues_.emplace_back(shr);
-  
-    pruningValues_[0]->emplace_back(PruningSolution(baseValues));
+    pruningValues_.emplace_back(std::vector{PruningSolution(start)});
   }
 
-std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
+void revDP::run()
 {
   int numberOfCurrentElement = 0;
   
-  float weightOfRemainingElements = problem_.getSumOfWeights();
+  int weightOfRemainingElements = problem_.getSumOfWeights();
   
   for (auto element = elementManager_.getElements().rbegin(); element != elementManager_.getElements().rend(); ++element)
   {
@@ -37,17 +35,15 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
   
     std::cout<<numberOfCurrentElement<<"\r"<<std::flush;
   
-    int numberOfPreviousSolutions = pruningValues_[numberOfCurrentElement - 1]->size();
-  
-    std::shared_ptr<std::vector<PruningSolution>> shr = std::make_shared<std::vector<PruningSolution>>();
-  
-    pruningValues_.emplace_back(shr);
+    int numberOfPreviousSolutions = pruningValues_[numberOfCurrentElement - 1].size();
     
-    pruningValues_[numberOfCurrentElement]->reserve(numberOfPreviousSolutions * 2);
+    pruningValues_.emplace_back(std::vector<PruningSolution>());
+    
+    pruningValues_[numberOfCurrentElement].reserve(numberOfPreviousSolutions * 2);
   
-    std::shared_ptr<std::vector<PruningSolution>> solutionsThisRound = pruningValues_[numberOfCurrentElement];
+    std::vector<PruningSolution>* solutionsThisRound = &pruningValues_[numberOfCurrentElement];
   
-    std::shared_ptr<std::vector<PruningSolution>> solutionsLastRound = pruningValues_[numberOfCurrentElement - 1];
+    std::vector<PruningSolution>* solutionsLastRound = &pruningValues_[numberOfCurrentElement - 1];
   
     //! i in paper
     int idxNewSolutions = 0;
@@ -64,18 +60,20 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
   
     while (idxNewSolutions < numberOfPreviousSolutions and (*solutionsLastRound)[idxNewSolutions].weight_ - element->weight_ >= 0)
     {
-      std::vector<float> newSolutionVec(numberOfFunctions_ + 1, 0);
-  
-      newSolutionVec[0] = (*solutionsLastRound)[idxNewSolutions].weight_ - element->weight_; //todo: doppelte berechnung
-  
-      for (int i = 1; i <= numberOfFunctions_; ++i)
+      PruningSolution newSolution(numberOfFunctions_);
+      
+      newSolution.weight_ = (*solutionsLastRound)[idxNewSolutions].weight_ - element->weight_;
+      
+      for (int i = 0; i < numberOfFunctions_; ++i)
       {
-        newSolutionVec[i] =
-            (*solutionsLastRound)[idxNewSolutions].solutionValues_.at(i) - element->values_.at(functionSubset_[i - 1] - 1) < 0 ? 0 : (*solutionsLastRound)[idxNewSolutions].solutionValues_.at(i) - element->values_.at(functionSubset_[i - 1] - 1);
+        int val = (*solutionsLastRound)[idxNewSolutions].solutionValues_.at(i) - element->values_.at(functionsRestricted_[i] - 1);
+        
+        if(val > 0)
+        {
+          newSolution.solutionValues_[i] = val;
+        }
       }
       
-      PruningSolution newSolution(newSolutionVec);
-    
       while (idxOldSolutions < numberOfPreviousSolutions and (*solutionsLastRound)[idxOldSolutions].weight_ >= newSolution.weight_)
       {
         maintainNonDominated((*solutionsLastRound)[idxOldSolutions], compareSol, equalWeightStack, solutionsThisRound);
@@ -96,7 +94,7 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
     
     if (!equalWeightStack.empty())
     {
-      float oldWeight = equalWeightStack.front().weight_;
+      int oldWeight = equalWeightStack.front().weight_;
       
       for (auto &sol: compareSol)
       {
@@ -107,12 +105,11 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
       }
     }
     
-    pruningValues_[numberOfCurrentElement]->shrink_to_fit();
+    pruningValues_[numberOfCurrentElement].shrink_to_fit();
   }
-  return pruningValues_;
 }
 
-void revDP::maintainNonDominated(PruningSolution &solution, std::list<PruningSolution*> &compareSol, std::list<PruningSolution> &equalWeightStack, std::shared_ptr<std::vector<PruningSolution>> currentSolution)
+void revDP::maintainNonDominated(PruningSolution &solution, std::list<PruningSolution*> &compareSol, std::list<PruningSolution> &equalWeightStack, std::vector<PruningSolution>* currentSolution)
 {
   bool newSolutionIsGood = false;
   
@@ -127,7 +124,7 @@ void revDP::maintainNonDominated(PruningSolution &solution, std::list<PruningSol
   
   if(!equalWeightStack.empty())
   {
-    float oldWeight = equalWeightStack.front().weight_;
+    int oldWeight = equalWeightStack.front().weight_;
   
     if(solution.weight_ != oldWeight)
     {
@@ -147,7 +144,7 @@ void revDP::maintainNonDominated(PruningSolution &solution, std::list<PruningSol
   
   for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
   {
-    if(!newSolutionIsGood and !dlex((**sol).solutionValues_, solution.solutionValues_))
+    if(!newSolutionIsGood and !dlex((**sol), solution))
     {
       newSolutionIsGood = true;
   
@@ -160,14 +157,14 @@ void revDP::maintainNonDominated(PruningSolution &solution, std::list<PruningSol
       ++sol;
     }
     
-    if(!newSolutionIsGood and dominates((**sol).solutionValues_, solution.solutionValues_))
+    if(!newSolutionIsGood and dominates((**sol), solution))
     {
       return;
     }
     
     if(newSolutionIsGood)
     {
-      if(dominates(solution.solutionValues_, (**sol).solutionValues_))
+      if(dominates(solution, (**sol)))
       {
         (**sol).lowCapacity_ = solution.weight_ + 1;
         
@@ -185,11 +182,11 @@ void revDP::maintainNonDominated(PruningSolution &solution, std::list<PruningSol
   }
 }
 
-bool revDP::dominates(std::vector<float> &sol1, std::vector<float> &sol2)
+bool revDP::dominates(PruningSolution& sol1, PruningSolution& sol2)
 {
-  for (auto i: functionSubset_)
+  for (int i = 0; i < numberOfFunctions_; ++i)
   {
-    if(sol1[i] > sol2[i])
+    if(sol1.solutionValues_[i] > sol2.solutionValues_[i])
     {
       return false;
     }
@@ -197,14 +194,19 @@ bool revDP::dominates(std::vector<float> &sol1, std::vector<float> &sol2)
   return true;
 }
 
-bool revDP::dlex(std::vector<float> &sol1, std::vector<float> &sol2)
+bool revDP::dlex(PruningSolution& sol1, PruningSolution& sol2)
 {
-  for (int i = 1; i <= numberOfFunctions_; ++i)
+  for (int i = 0; i < numberOfFunctions_; ++i)
   {
-    if (sol1[i] != sol2[i])
+    if (sol1.solutionValues_[i] != sol2.solutionValues_[i])
     {
-      return sol1[i] < sol2[i];
+      return sol1.solutionValues_[i] < sol2.solutionValues_[i];
     }
   }
   return true;
+}
+
+std::vector<std::vector<PruningSolution>> &revDP::getPruningValues()
+{
+  return pruningValues_;
 }

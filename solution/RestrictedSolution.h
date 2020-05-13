@@ -16,10 +16,10 @@ public:
   
   void generateSolutin() override;
   
-  const std::vector<float> &getMinimalFunctionValues() const;
+  const std::vector<int> &getMinimalFunctionValues() const;
   
 private:
-  std::vector<float> minimalFunctionValues_;
+  std::vector<int> minimalFunctionValues_;
 
 };
 

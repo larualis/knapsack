@@ -12,7 +12,7 @@ void RestrictedSolution::generateSolutin()
   //! restricted DP and data extraction
   auto t1 = std::chrono::high_resolution_clock::now();
   
-   minimalFunctionValues_ = std::vector<float>(problem_.getRestrictedFunctions().size(), 0);
+   minimalFunctionValues_ = std::vector<int>(problem_.getRestrictedFunctions().size(), 0);
   
   for (int i = 0; i < problem_.getRestrictedFunctions().size(); ++i)
   {
@@ -39,10 +39,10 @@ void RestrictedSolution::generateSolutin()
   //! rev DP
   revDP rDP(problem_, minimalFunctionValues_);
   
-  auto pruningValues = rDP.run();
+  rDP.run();
   
   //! final DP
-  DP finalDP(problem_, pruningValues);
+  DP finalDP(problem_, rDP.getPruningValues());
   
   finalDP.run();
   
@@ -54,7 +54,7 @@ void RestrictedSolution::generateSolutin()
   
 }
 
-const std::vector<float> &RestrictedSolution::getMinimalFunctionValues() const
+const std::vector<int> &RestrictedSolution::getMinimalFunctionValues() const
 {
   return minimalFunctionValues_;
 }

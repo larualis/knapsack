@@ -8,7 +8,7 @@
 #include <list>
 #include <cmath>
 
-DP::DP(Problem& problem, std::vector<std::shared_ptr<std::vector<PruningSolution>>> pruningValues):
+DP::DP(Problem& problem, std::vector<std::vector<PruningSolution>>& pruningValues):
     problem_(problem),
     elementManager_(problem.getEleManager()),
     capacity_(problem.getCapacity()),
@@ -419,7 +419,7 @@ bool DP::isValidAccordingToPruning(static_vector &sol, int counter, int& startVa
   //todo: experimental
   if(true and functionsRestricted_.size() == 1)
   {
-    for (auto pruneSol = pruningValues_[elementManager_.getNumberOfElements() - counter]->rbegin() + startValue; pruneSol != pruningValues_[elementManager_.getNumberOfElements() - counter]->rend(); ++pruneSol)
+    for (auto pruneSol = pruningValues_[elementManager_.getNumberOfElements() - counter].rbegin() + startValue; pruneSol != pruningValues_[elementManager_.getNumberOfElements() - counter].rend(); ++pruneSol)
     {
       if (pruneSol->weight_ >= sol.front())
       {
@@ -440,7 +440,7 @@ bool DP::isValidAccordingToPruning(static_vector &sol, int counter, int& startVa
     }
   }
   
-  for (auto pruneSol = pruningValues_[elementManager_.getNumberOfElements() - counter]->rbegin() + startValue; pruneSol != pruningValues_[elementManager_.getNumberOfElements() - counter]->rend(); ++pruneSol)
+  for (auto pruneSol = pruningValues_[elementManager_.getNumberOfElements() - counter].rbegin() + startValue; pruneSol != pruningValues_[elementManager_.getNumberOfElements() - counter].rend(); ++pruneSol)
   {
     if(!weightIsGreater and sol.front() > pruneSol->weight_)
     {
@@ -457,7 +457,7 @@ bool DP::isValidAccordingToPruning(static_vector &sol, int counter, int& startVa
       bool validInRound = true;
       for (int i = 0; i < functionsRestricted_.size(); ++i)
       {
-        if (sol[functionsRestricted_[i]] < pruneSol->solutionValues_.at(i + 1))
+        if (sol[functionsRestricted_[i]] < pruneSol->solutionValues_.at(i))
         {
           validInRound = false;
           break;

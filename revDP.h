@@ -12,22 +12,31 @@
 
 struct PruningSolution
 {
-  std::vector<float> solutionValues_;
+  static_vector solutionValues_;
   
-  float weight_;
+  int weight_;
   
-  float lowCapacity_;
+  int lowCapacity_;
   
   int relevantRounds_;
   
-  explicit PruningSolution(std::vector<float> solution)
+  explicit PruningSolution(static_vector solution):
+  solutionValues_(solution.begin() + 1,solution.end())
   {
-    solutionValues_ = std::move(solution);
-  
-    weight_ = solutionValues_.front();
+    weight_ = solution.front();
     
     lowCapacity_ = 0;
   
+    relevantRounds_ = -1;
+  }
+  
+  explicit PruningSolution(int numberOfFunctions):
+  solutionValues_(numberOfFunctions, 0)
+  {
+    weight_ = 0;
+    
+    lowCapacity_ = 0;
+    
     relevantRounds_ = -1;
   }
 };
@@ -40,26 +49,30 @@ private:
   
   ElementManager& elementManager_;
   
-  float capacity_;
+  int capacity_;
   
   int numberOfFunctions_;
   
-  std::vector<int> functionSubset_;
+  std::vector<int> functionsRestricted_;
   
-  std::vector<std::shared_ptr<std::vector<PruningSolution>>> pruningValues_;
+  std::vector<std::vector<PruningSolution>> pruningValues_;
+public:
+  std::vector<std::vector<PruningSolution>> &getPruningValues();
+
 public:
   
-  revDP(Problem& problem, std::vector<float> baseValues);
+  revDP(Problem& problem, std::vector<int> baseValues);
   
-  std::vector<std::shared_ptr<std::vector<PruningSolution>>> run();
+  void run();
+  
 private:
   
-  bool dominates(std::vector<float>& sol1, std::vector<float>& sol2);
+  bool dominates(PruningSolution& sol1, PruningSolution& sol2);
   
-  bool dlex(std::vector<float> &sol1, std::vector<float> &sol2);
+  bool dlex(PruningSolution& sol1, PruningSolution& sol2);
   
   void maintainNonDominated(PruningSolution &solution, std::list<PruningSolution *> &compareSol, std::list<PruningSolution> &equalWeightStack,
-                            std::shared_ptr<std::vector<PruningSolution>> currentSolution);
+                            std::vector<PruningSolution>* currentSolution);
 };
 
 

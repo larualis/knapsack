@@ -10,6 +10,7 @@
 #include <list>
 #include "Problem.h"
 #include "revDP.h"
+#include "restrictedKnapsackVerifier.h"
 #include <memory>
 
 class DP
@@ -24,6 +25,8 @@ private:
   int numberOfFunctions_;
   
   std::vector<int> functionsToCompare_;
+  
+  restrictedKnapsackVerifier restKnap;
   
   std::vector<int> functionsRestricted_;
   
@@ -54,7 +57,7 @@ private:
   
   bool lex(std::vector<float> &sol1, std::vector<float> &sol2);
   
-  void maintainNonDominated(std::vector<float>& newSolution, int validRound, std::list<std::vector<float>>& compareSol, int counter, int& startValue);
+  void maintainNonDominated(std::vector<float>& solution, int validRound, std::list<std::vector<float>>& compareSol, int counter, int& startValue);
   
   void keepNonDominated(std::vector<float> &newSolution, std::list<std::vector<float>> &compareSol);
   

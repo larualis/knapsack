@@ -58,7 +58,7 @@ private:
   
   bool dlex(std::vector<float> &sol1, std::vector<float> &sol2);
   
-  void maintainNonDominated(PruningSolution &newSolution, std::list<PruningSolution *> &compareSol, std::list<PruningSolution> &equalWeightStack,
+  void maintainNonDominated(PruningSolution &solution, std::list<PruningSolution *> &compareSol, std::list<PruningSolution> &equalWeightStack,
                             std::shared_ptr<std::vector<PruningSolution>> currentSolution);
 };
 

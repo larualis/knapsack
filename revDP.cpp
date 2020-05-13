@@ -45,13 +45,15 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
     
     pruningValues_[numberOfCurrentElement]->reserve(numberOfPreviousSolutions * 2);
   
-    std::shared_ptr<std::vector<PruningSolution>> currentSolution = pruningValues_[numberOfCurrentElement];
+    std::shared_ptr<std::vector<PruningSolution>> solutionsThisRound = pruningValues_[numberOfCurrentElement];
   
-    std::shared_ptr<std::vector<PruningSolution>> previousSolution = pruningValues_[numberOfCurrentElement - 1];
+    std::shared_ptr<std::vector<PruningSolution>> solutionsLastRound = pruningValues_[numberOfCurrentElement - 1];
   
-    int posNewSolutions = 0; // i
-    
-    int posOldSolutions = 0; // j
+    //! i in paper
+    int idxNewSolutions = 0;
+  
+    //! j in paper
+    int idxOldSolutions = 0;
   
     std::list<PruningSolution*> compareSol;
   
@@ -60,36 +62,36 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
     
     weightOfRemainingElements -= element->weight_;
   
-    while (posNewSolutions < numberOfPreviousSolutions and (*previousSolution)[posNewSolutions].weight_ - element->weight_ >= 0)
+    while (idxNewSolutions < numberOfPreviousSolutions and (*solutionsLastRound)[idxNewSolutions].weight_ - element->weight_ >= 0)
     {
       std::vector<float> newSolutionVec(numberOfFunctions_ + 1, 0);
   
-      newSolutionVec[0] = (*previousSolution)[posNewSolutions].weight_ - element->weight_; //todo: doppelte berechnung
+      newSolutionVec[0] = (*solutionsLastRound)[idxNewSolutions].weight_ - element->weight_; //todo: doppelte berechnung
   
       for (int i = 1; i <= numberOfFunctions_; ++i)
       {
         newSolutionVec[i] =
-            (*previousSolution)[posNewSolutions].solutionValues_.at(i) - element->values_.at(functionSubset_[i - 1] - 1) < 0 ? 0 : (*previousSolution)[posNewSolutions].solutionValues_.at(i) - element->values_.at(functionSubset_[i - 1] - 1);
+            (*solutionsLastRound)[idxNewSolutions].solutionValues_.at(i) - element->values_.at(functionSubset_[i - 1] - 1) < 0 ? 0 : (*solutionsLastRound)[idxNewSolutions].solutionValues_.at(i) - element->values_.at(functionSubset_[i - 1] - 1);
       }
       
       PruningSolution newSolution(newSolutionVec);
     
-      while (posOldSolutions < numberOfPreviousSolutions and (*previousSolution)[posOldSolutions].weight_ >= newSolution.weight_)
+      while (idxOldSolutions < numberOfPreviousSolutions and (*solutionsLastRound)[idxOldSolutions].weight_ >= newSolution.weight_)
       {
-        maintainNonDominated((*previousSolution)[posOldSolutions], compareSol, equalWeightStack, currentSolution);
-        ++posOldSolutions;
+        maintainNonDominated((*solutionsLastRound)[idxOldSolutions], compareSol, equalWeightStack, solutionsThisRound);
+        ++idxOldSolutions;
       }
 
-      maintainNonDominated(newSolution, compareSol, equalWeightStack, currentSolution);
+      maintainNonDominated(newSolution, compareSol, equalWeightStack, solutionsThisRound);
     
-      ++posNewSolutions;
+      ++idxNewSolutions;
     }
   
-    while(posOldSolutions < numberOfPreviousSolutions)
+    while(idxOldSolutions < numberOfPreviousSolutions)
     {
-      maintainNonDominated((*previousSolution)[posOldSolutions], compareSol, equalWeightStack, currentSolution);
+      maintainNonDominated((*solutionsLastRound)[idxOldSolutions], compareSol, equalWeightStack, solutionsThisRound);
     
-      ++posOldSolutions;
+      ++idxOldSolutions;
     }
     
     if (!equalWeightStack.empty())
@@ -100,7 +102,7 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
       {
         if(sol->weight_ == oldWeight)
         {
-          currentSolution->push_back(*sol);
+          solutionsThisRound->push_back(*sol);
         }
       }
     }
@@ -110,13 +112,13 @@ std::vector<std::shared_ptr<std::vector<PruningSolution>>> revDP::run()
   return pruningValues_;
 }
 
-void revDP::maintainNonDominated(PruningSolution &newSolution, std::list<PruningSolution*> &compareSol, std::list<PruningSolution> &equalWeightStack, std::shared_ptr<std::vector<PruningSolution>> currentSolution)
+void revDP::maintainNonDominated(PruningSolution &solution, std::list<PruningSolution*> &compareSol, std::list<PruningSolution> &equalWeightStack, std::shared_ptr<std::vector<PruningSolution>> currentSolution)
 {
   bool newSolutionIsGood = false;
   
   if (compareSol.empty())
   {
-    equalWeightStack.push_back(newSolution);
+    equalWeightStack.push_back(solution);
   
     compareSol.push_back(&equalWeightStack.back());
     
@@ -127,7 +129,7 @@ void revDP::maintainNonDominated(PruningSolution &newSolution, std::list<Pruning
   {
     float oldWeight = equalWeightStack.front().weight_;
   
-    if(newSolution.weight_ != oldWeight)
+    if(solution.weight_ != oldWeight)
     {
       for (auto &sol: compareSol)
       {
@@ -145,29 +147,29 @@ void revDP::maintainNonDominated(PruningSolution &newSolution, std::list<Pruning
   
   for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
   {
-    if(!newSolutionIsGood and !dlex((**sol).solutionValues_, newSolution.solutionValues_))
+    if(!newSolutionIsGood and !dlex((**sol).solutionValues_, solution.solutionValues_))
     {
       newSolutionIsGood = true;
-      
-      newSolution.relevantRounds_ += 1;
   
-      equalWeightStack.push_back(newSolution);
+      solution.relevantRounds_ += 1;
+  
+      equalWeightStack.push_back(solution);
       
       sol = compareSol.insert(sol, &equalWeightStack.back());
       
       ++sol;
     }
     
-    if(!newSolutionIsGood and dominates((**sol).solutionValues_, newSolution.solutionValues_))
+    if(!newSolutionIsGood and dominates((**sol).solutionValues_, solution.solutionValues_))
     {
       return;
     }
     
     if(newSolutionIsGood)
     {
-      if(dominates(newSolution.solutionValues_, (**sol).solutionValues_))
+      if(dominates(solution.solutionValues_, (**sol).solutionValues_))
       {
-        (**sol).lowCapacity_ = newSolution.weight_ + 1;
+        (**sol).lowCapacity_ = solution.weight_ + 1;
         
         sol = compareSol.erase(sol);
         --sol;
@@ -177,7 +179,7 @@ void revDP::maintainNonDominated(PruningSolution &newSolution, std::list<Pruning
   
   if(!newSolutionIsGood)
   {
-    equalWeightStack.push_back(newSolution);
+    equalWeightStack.push_back(solution);
     
     compareSol.push_back(&equalWeightStack.back());
   }

@@ -17,7 +17,7 @@ struct PruningSolution
   int weight_;
   
   int lowCapacity_;
-  
+  //! number of rounds to come, where this is optimal , 0 means last round
   int relevantRounds_;
   
   explicit PruningSolution(static_vector solution):

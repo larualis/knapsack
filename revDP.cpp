@@ -30,8 +30,10 @@ void revDP::run()
   
   for (auto element = elementManager_.getElements().rbegin(); element != elementManager_.getElements().rend(); ++element)
   {
-    //init
+    //!init
     ++numberOfCurrentElement;
+  
+    weightOfRemainingElements -= element->weight_;
   
     std::cout<<numberOfCurrentElement<<"\r"<<std::flush;
   
@@ -54,10 +56,8 @@ void revDP::run()
     std::list<PruningSolution*> compareSol;
   
     std::list<PruningSolution> equalWeightStack;
-    //init end
+    //!init end
     
-    weightOfRemainingElements -= element->weight_;
-  
     while (idxNewSolutions < numberOfPreviousSolutions and (*solutionsLastRound)[idxNewSolutions].weight_ - element->weight_ >= 0)
     {
       PruningSolution newSolution(numberOfFunctions_);
@@ -100,27 +100,22 @@ void revDP::run()
       {
         if(sol->weight_ == oldWeight)
         {
+          ++sol->relevantRounds_;
+  
           solutionsThisRound->push_back(*sol);
         }
       }
     }
-    
-    pruningValues_[numberOfCurrentElement].shrink_to_fit();
+    //todo: man könnte hier noch die lösungen löschen, falls remainingcapacity < lowcapacity, da diese eh nie betrachtet werden
+    solutionsThisRound->shrink_to_fit();
   }
 }
 
 void revDP::maintainNonDominated(PruningSolution &solution, std::list<PruningSolution*> &compareSol, std::list<PruningSolution> &equalWeightStack, std::vector<PruningSolution>* currentSolution)
 {
-  bool newSolutionIsGood = false;
+  bool addSolution = true;
   
-  if (compareSol.empty())
-  {
-    equalWeightStack.push_back(solution);
-  
-    compareSol.push_back(&equalWeightStack.back());
-    
-    return;
-  }
+  bool solutionWasAddedToCompareSol = false;
   
   if(!equalWeightStack.empty())
   {
@@ -132,49 +127,55 @@ void revDP::maintainNonDominated(PruningSolution &solution, std::list<PruningSol
       {
         if(sol->weight_ == oldWeight)
         {
-          currentSolution->push_back(*sol);//todo nur wenn vorderes interval nicht größer ist als capacity der verbleibenden elemente
+          ++sol->relevantRounds_;
+          
+          currentSolution->push_back(*sol);
         
           sol = &currentSolution->back();
         }
       }
-    
       equalWeightStack.clear();
     }
   }
   
-  for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
+  if(!compareSol.empty())
   {
-    if(!newSolutionIsGood and !dlex((**sol), solution))
+    for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
     {
-      newSolutionIsGood = true;
-  
-      solution.relevantRounds_ += 1;
-  
-      equalWeightStack.push_back(solution);
-      
-      sol = compareSol.insert(sol, &equalWeightStack.back());
-      
-      ++sol;
-    }
-    
-    if(!newSolutionIsGood and dominates((**sol), solution))
-    {
-      return;
-    }
-    
-    if(newSolutionIsGood)
-    {
-      if(dominates(solution, (**sol)))
+      if(!solutionWasAddedToCompareSol and !dlex((**sol), solution))
       {
-        (**sol).lowCapacity_ = solution.weight_ + 1;
+        solutionWasAddedToCompareSol = true;
         
-        sol = compareSol.erase(sol);
-        --sol;
+        equalWeightStack.push_back(solution);
+  
+        sol = compareSol.insert(sol, &equalWeightStack.back());
+  
+        addSolution = false;
+        
+        ++sol;
+      }
+      
+      if(!solutionWasAddedToCompareSol and dominates((**sol), solution))
+      {
+        addSolution = false;
+        
+        break;
+      }
+      
+      if(solutionWasAddedToCompareSol)
+      {
+        if(dominates(solution, (**sol)))
+        {
+          (**sol).lowCapacity_ = solution.weight_ + 1;
+          
+          sol = compareSol.erase(sol);
+          --sol;
+        }
       }
     }
   }
   
-  if(!newSolutionIsGood)
+  if(addSolution)
   {
     equalWeightStack.push_back(solution);
     

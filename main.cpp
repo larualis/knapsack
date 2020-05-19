@@ -1,11 +1,7 @@
 #include <iostream>
-#include <fstream>
 #include <filesystem>
 #include <vector>
-#include <cmath>
-#include "DP.h"
 #include "Problem.h"
-#include "revDP.h"
 #include "solution/NormalSolution.h"
 #include "solution/RestrictedSolution.h"
 #include "solution/StatisticManager.h"
@@ -162,6 +158,31 @@ void checkCorrectness(Problem &problem)
    **/
 }
 
+int numberOfFunctionsInInput(std::string& filePath)
+{
+  std::ifstream file;
+  
+  file.open(filePath);
+  
+  std::string line;
+  
+  int numberOfFunctionsInInput = -1;
+  
+  std::getline(file, line);
+  
+  std::stringstream ss(line);
+  
+  float val;
+  
+  while(ss >> val)
+  {
+    ++numberOfFunctionsInInput;
+  }
+  file.close();
+  
+  return numberOfFunctionsInInput;
+}
+
 int main(int argc, char *argv[])
 {
   /**
@@ -231,15 +252,21 @@ int main(int argc, char *argv[])
     
     std::vector<float> slack {0.8};
     
-    Problem problem(pathToFiles + "/knapsack" + std::to_string(numberKnapsack) + ".txt", restrictedFunctions, slack);
+    std::string filePath = pathToFiles + "/knapsack" + std::to_string(numberKnapsack) + ".txt";
     
-    if(problem.getNumberOfFunctions() != NUMBEROFFUNCTIONS)
+    if(numberOfFunctionsInInput(filePath) > NUMBEROFFUNCTIONS)
     {
-      std::cout<<"change macro number of functions to match input";
+      std::cout<<"macro number for element size is too small" << std::endl;
       
+      std::cout<< "macro number = " << NUMBEROFFUNCTIONS << std::endl;
+      
+      std::cout << "input number = "<< numberOfFunctionsInInput(filePath) << std::endl;
+  
       return 0;
     }
-  
+    
+    Problem problem(filePath, restrictedFunctions, slack);
+    
     problem.makeMaxOrder();
     
     switch (type)

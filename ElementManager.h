@@ -78,11 +78,11 @@ public:
   
   void reverseElements();
   
-  void makeSumOrder();
+  void makeSumOrder(std::vector<int> functions);
   
-  void makeMaxOrder();
+  void makeMaxOrder(std::vector<int> functions);
   
-  void makeMinOrder();
+  void makeMinOrder(std::vector<int> functions);
   
   const std::vector<std::vector<static_vector>> &getOrderedRawElementsValue() const;
   

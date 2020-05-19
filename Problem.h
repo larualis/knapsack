@@ -50,11 +50,11 @@ public:
   
   void reverseElements();
   
-  void makeSumOrder();
+  void makeSumOrder(std::vector<int> functionsForOrder = std::vector<int>());
   
-  void makeMaxOrder();
+  void makeMaxOrder(std::vector<int> functionsForOrder = std::vector<int>());
   
-  void makeMinOrder();
+  void makeMinOrder(std::vector<int> functionsForOrder = std::vector<int>());
 };
 
 

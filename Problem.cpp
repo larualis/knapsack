@@ -99,19 +99,43 @@ void Problem::readData(std::string& filename, std::vector<std::vector<int>>& raw
 }
 
 
-void Problem::makeSumOrder()
+void Problem::makeSumOrder(std::vector<int> functionsForOrder )
 {
-  eleManager_.makeSumOrder();
+  if(functionsForOrder.empty())
+  {
+    for(int i = 1; i <= numberOfFunctions_; ++i)
+    {
+      functionsForOrder.push_back(i);
+    }
+  }
+
+  eleManager_.makeSumOrder(functionsForOrder);
 }
 
-void Problem::makeMaxOrder()
+void Problem::makeMaxOrder(std::vector<int> functionsForOrder )
 {
-  eleManager_.makeMaxOrder();
+  if(functionsForOrder.empty())
+  {
+    for(int i = 1; i <= numberOfFunctions_; ++i)
+    {
+      functionsForOrder.push_back(i);
+    }
+  }
+  
+  eleManager_.makeMaxOrder(functionsForOrder);
 }
 
-void Problem::makeMinOrder()
+void Problem::makeMinOrder(std::vector<int> functionsForOrder )
 {
- eleManager_.makeMinOrder();
+  if(functionsForOrder.empty())
+  {
+    for(int i = 1; i <= numberOfFunctions_; ++i)
+    {
+      functionsForOrder.push_back(i);
+    }
+  }
+  
+  eleManager_.makeMinOrder(functionsForOrder);
 }
 
 void Problem::reverseElements()

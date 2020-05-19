@@ -69,7 +69,7 @@ void ElementManager::generateOrder()
 }
 
 
-void ElementManager::makeSumOrder()
+void ElementManager::makeSumOrder(std::vector<int> functions)
 {
   std::vector<elementWithOrderValue> orderVector;
   
@@ -77,7 +77,16 @@ void ElementManager::makeSumOrder()
   
   for (auto &ele: elements_)
   {
-    orderVector.emplace_back(elementWithOrderValue(&ele, ele.SumOfposOrderValueWeightRatio_));
+    float sumOfOrder = 0;
+  
+    for(int i: functions)
+    {
+      sumOfOrder += ele.posOrderValueWeightRatio_[i - 1];
+    }
+    
+    sumOfOrder += (float) ele.SumOfposOrderValueWeightRatio_ / (float)( numberOfElements_ * numberOfFunctions_);
+    
+    orderVector.emplace_back(elementWithOrderValue(&ele, sumOfOrder));
   }
   
   std::sort(orderVector.begin(), orderVector.end());
@@ -94,7 +103,7 @@ void ElementManager::makeSumOrder()
   elements_ = std::move(sortedElements);
 }
 
-void ElementManager::makeMaxOrder()
+void ElementManager::makeMaxOrder(std::vector<int> functions)
 {
   std::vector<elementWithOrderValue> orderVector;
   
@@ -102,17 +111,17 @@ void ElementManager::makeMaxOrder()
   
   for (auto &ele: elements_)
   {
-    float greatestPos = ele.posOrderValueWeightRatio_.front();
+    float greatestPos = ele.posOrderValueWeightRatio_[functions.front() - 1];
     
-    for(auto pos: ele.posOrderValueWeightRatio_)
+    for(auto i : functions)
     {
-      if(greatestPos < pos)
+      if(greatestPos < ele.posOrderValueWeightRatio_[i - 1])
       {
-        greatestPos = pos;
+        greatestPos = ele.posOrderValueWeightRatio_[i - 1];
       }
     }
   
-    greatestPos += (float)ele.SumOfposOrderValueWeightRatio_ / (float)( numberOfElements_ * numberOfFunctions_);
+    greatestPos += (float) ele.SumOfposOrderValueWeightRatio_ / (float)( numberOfElements_ * numberOfFunctions_);
     
     orderVector.emplace_back(elementWithOrderValue(&ele, greatestPos));
   }
@@ -131,7 +140,7 @@ void ElementManager::makeMaxOrder()
   elements_ = std::move(sortedElements);
 }
 
-void ElementManager::makeMinOrder()
+void ElementManager::makeMinOrder(std::vector<int> functions)
 {
   std::vector<elementWithOrderValue> orderVector;
   
@@ -139,13 +148,13 @@ void ElementManager::makeMinOrder()
   
   for (auto &ele: elements_)
   {
-    float smallestPos = ele.posOrderValueWeightRatio_.front();
-    
-    for(auto pos: ele.posOrderValueWeightRatio_)
+    float smallestPos = ele.posOrderValueWeightRatio_[functions.front() - 1];
+  
+    for(auto i : functions)
     {
-      if(smallestPos > pos)
+      if(smallestPos > ele.posOrderValueWeightRatio_[i - 1])
       {
-        smallestPos = pos;
+        smallestPos = ele.posOrderValueWeightRatio_[i - 1];
       }
     }
   

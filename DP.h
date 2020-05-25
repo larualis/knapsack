@@ -23,6 +23,8 @@ private:
  
   int numberOfFunctions_;
   
+  int numberOfCurrentElement_;
+  
   std::vector<int> functionsToCompare_;
   
   std::vector<int> functionsRestricted_;
@@ -30,15 +32,17 @@ private:
   std::vector<static_vector> solutions_;
   
   std::vector<int> validRounds_;
+  
+  float error_;
 
 private:
   
   std::vector<std::vector<PruningSolution>> pruningValues_;
   
 public:
-  DP(Problem& problem, std::vector<int> functionsToCompare);
+  DP(Problem& problem, std::vector<int> functionsToCompare, float error=0);
   
-  DP(Problem &problem, std::vector<std::vector<PruningSolution>>& pruningValues);
+  DP(Problem &problem, std::vector<std::vector<PruningSolution>>& pruningValues, float error=0);
   
   void run();
   
@@ -54,9 +58,11 @@ private:
   
   bool lex(static_vector& sol1, static_vector& sol2);
   
-  void maintainNonDominated(static_vector& solution, int validRound, std::list<static_vector>& compareSol, int counter, int& startValue);
+  void maintainNonDominated(static_vector& solution, int validRound, std::list<static_vector>& currentBestSolutions, int counter, int& startValue);
   
-  void keepNonDominated(static_vector& newSolution, std::list<static_vector>& compareSol);
+  void keepNonDominated(static_vector& newSolution, std::list<static_vector>& currentBestSolutions);
+  
+  int removeWithBetterExtension(std::list<static_vector>& currentBestSolutions);
   
   static_vector upperBound(static_vector &sol);
 };

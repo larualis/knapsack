@@ -8,13 +8,15 @@
 #include <list>
 #include <cmath>
 
-DP::DP(Problem& problem, std::vector<std::vector<PruningSolution>>& pruningValues):
+DP::DP(Problem& problem, std::vector<std::vector<PruningSolution>>& pruningValues, float error):
     problem_(problem),
     elementManager_(problem.getEleManager()),
     capacity_(problem.getCapacity()),
     numberOfFunctions_(problem.getNumberOfFunctions()),
     functionsRestricted_(problem.getRestrictedFunctions()),
-    pruningValues_(std::move(pruningValues))
+    pruningValues_(std::move(pruningValues)),
+    numberOfCurrentElement_(0),
+    error_(error)
 {
   solutions_.emplace_back(static_vector(numberOfFunctions_ + 1,0));
   
@@ -26,12 +28,14 @@ DP::DP(Problem& problem, std::vector<std::vector<PruningSolution>>& pruningValue
   }
 }
 
-DP::DP(Problem &problem, std::vector<int> functionsToCompare):
+DP::DP(Problem &problem, std::vector<int> functionsToCompare, float error):
     problem_(problem),
     elementManager_(problem.getEleManager()),
     capacity_(problem.getCapacity()),
     numberOfFunctions_(functionsToCompare.size()),
-    functionsToCompare_(functionsToCompare)
+    functionsToCompare_(functionsToCompare),
+    numberOfCurrentElement_(0),
+    error_(error)
 {
   solutions_.emplace_back(static_vector(numberOfFunctions_ + 1,0));
   
@@ -40,15 +44,13 @@ DP::DP(Problem &problem, std::vector<int> functionsToCompare):
 
 void DP::run()
 {
-  int numberOfCurrentElement = 0;
-  
   int weightOfRemainingElements = problem_.getSumOfWeights();
   
   for (const auto & element : elementManager_.getElements())
   {
-   ++numberOfCurrentElement;
+   ++numberOfCurrentElement_;
     
-    std::cout << numberOfCurrentElement << "\r" << std::flush;
+    std::cout << numberOfCurrentElement_ << "\r" << std::flush;
   
     //! i in paper
     int idxNewSolution = 0;
@@ -58,14 +60,13 @@ void DP::run()
     
     std::vector<static_vector> previousSolutions = std::move(solutions_);
     
-    std::list<static_vector> compareSol;
+    std::list<static_vector> currentBestSolutions;
     
   
     std::vector<int> validPreviousRounds = std::move(validRounds_);
     
     int startValue = 0;//todo:rename
-  
-  
+    
     while (idxOldSolution < previousSolutions.size() and previousSolutions[idxOldSolution][0] + weightOfRemainingElements <= capacity_)
     {
       ++idxOldSolution;
@@ -84,32 +85,31 @@ void DP::run()
       
       while (idxOldSolution < previousSolutions.size() and lex(previousSolutions[idxOldSolution], newSolution))
       {
-        maintainNonDominated(previousSolutions[idxOldSolution], validPreviousRounds[idxOldSolution], compareSol, numberOfCurrentElement, startValue);
+        maintainNonDominated(previousSolutions[idxOldSolution], validPreviousRounds[idxOldSolution], currentBestSolutions, numberOfCurrentElement_, startValue);
         
         ++idxOldSolution;
       }
 
-      maintainNonDominated(newSolution, 0, compareSol, numberOfCurrentElement, startValue);
+      maintainNonDominated(newSolution, 0, currentBestSolutions, numberOfCurrentElement_, startValue);
       
       ++idxNewSolution;
     }
     
     while(idxOldSolution < previousSolutions.size())
     {
-      maintainNonDominated(previousSolutions[idxOldSolution], validPreviousRounds[idxOldSolution], compareSol, numberOfCurrentElement, startValue);
+      maintainNonDominated(previousSolutions[idxOldSolution], validPreviousRounds[idxOldSolution], currentBestSolutions, numberOfCurrentElement_, startValue);
   
       ++idxOldSolution;
     }
   
     weightOfRemainingElements -= element.weight_;
     
-    if(weightOfRemainingElements == 0)
+    if(numberOfCurrentElement_ == elementManager_.getNumberOfElements())
     {
-      std::vector finalSol (compareSol.begin(), compareSol.end());
+      std::vector finalSol (currentBestSolutions.begin(), currentBestSolutions.end());
       
       solutions_ = std::move(finalSol);
     }
-    
     else
     {
       //!used for testing, used to disable last pruning rule
@@ -117,120 +117,8 @@ void DP::run()
       {
         continue;
       }
-      
-      //! sort remaining elements
-      std::vector<elementWithOrderValue> maxOrder;
   
-      maxOrder.reserve(elementManager_.getNumberOfElements() - numberOfCurrentElement);
-      
-      std::vector<elementWithOrderValue> sumOrder = maxOrder;//todo: element with value should use direct value and not pointer
-      
-      elementManager_.removeElementFromOrder(numberOfCurrentElement);
-      
-      for(auto ele = elementManager_.getElements().begin() + numberOfCurrentElement; ele != elementManager_.getElements().end(); ++ele)
-      {
-        float sum = 0;
-        
-        for (auto h : functionsToCompare_)
-        {
-          sum += ele->posOrderValueWeightRatio_[h - 1];
-        }
-        
-        sumOrder.emplace_back( &(*ele), sum);
-  
-        float val = 0;
-        
-        for (auto h : functionsToCompare_)
-        {
-          if(val < ele->posOrderValueWeightRatio_[h - 1])
-          {
-            val = ele->posOrderValueWeightRatio_[h - 1];
-          }
-        }
-  
-        val += sum / (float)( elementManager_.getNumberOfElements() * numberOfFunctions_);
-        
-        maxOrder.emplace_back(&(*ele), val);
-      }
-      
-      std::sort(sumOrder.begin(), sumOrder.end());
-      
-      std::sort(maxOrder.begin(), maxOrder.end());
-      
-      //!generate set F from paper
-      std::list<static_vector> compareSolF;
-      
-      for (auto sol: compareSol)
-      {
-        for (auto &ele : sumOrder)
-        {
-          if(sol.front() + ele.ele_->weight_ <= capacity_)
-          {
-            sol.front() += ele.ele_->weight_;
-            
-            for (int idx = 1; idx <= numberOfFunctions_; ++idx)
-            {
-              sol[idx] += ele.ele_->values_[functionsToCompare_[idx - 1] - 1];
-            }
-          }
-        }
-        keepNonDominated(sol, compareSolF);
-      }
-  
-      for (auto sol: compareSol)
-      {
-        for (auto &ele : maxOrder)
-        {
-          if(sol.front() + ele.ele_->weight_ <= capacity_)
-          {
-            sol.front() += ele.ele_->weight_;
-        
-            for (int idx = 1; idx <= numberOfFunctions_; ++idx)
-            {
-              sol[idx] += ele.ele_->values_[functionsToCompare_[idx - 1] - 1];
-            }
-          }
-        }
-        keepNonDominated(sol, compareSolF);
-      }
-      
-      //!remove solutions according to upper bound rule
-      int numberOfElementsToRemove = 0;
-      
-      for (auto &sol: solutions_)
-      {
-        static_vector upperBoundOfSol(upperBound(sol));
-        
-        bool remove = false;
-        
-        for (auto &compSol : compareSolF)
-        {
-          if (dlex(compSol, upperBoundOfSol))
-          {
-            if(dominates(compSol, upperBoundOfSol, true))
-            {
-              if(!std::equal(compSol.begin() + 1, compSol.end(), upperBoundOfSol.begin() + 1))
-              {
-                remove = true;
-                break;
-              }
-            }
-          }
-          else
-          {
-           break;
-          }
-        }
-        
-        if(remove)
-        {
-          ++numberOfElementsToRemove;
-        }
-        else
-        {
-          break;
-        }
-      }
+      int numberOfElementsToRemove = removeWithBetterExtension(currentBestSolutions);
       
       solutions_.erase(solutions_.begin(), solutions_.begin() + numberOfElementsToRemove);
       
@@ -240,11 +128,11 @@ void DP::run()
 }
 
 
-void DP::maintainNonDominated(static_vector& solution, int validRound, std::list<static_vector> &compareSol, int counter, int& startValue)
+void DP::maintainNonDominated(static_vector& solution, int validRound, std::list<static_vector>& currentBestSolutions, int counter, int& startValue)
 {
   bool addSolution = true;
   
-  bool solutionWasAddedToCompareSol = false;
+  bool solutionWasAddedToCurrentBestSolutions = false;
   
   int validRoundsForNewSolution = 0;
   
@@ -260,31 +148,31 @@ void DP::maintainNonDominated(static_vector& solution, int validRound, std::list
     }
   }
   
-  if(!compareSol.empty() and addSolution)
+  if(!currentBestSolutions.empty() and addSolution)
   {
-    for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
+    for (auto sol = currentBestSolutions.begin(); sol != currentBestSolutions.end(); ++sol)
     {
-      if(!solutionWasAddedToCompareSol and !dlex(*sol, solution))
+      if(!solutionWasAddedToCurrentBestSolutions and !dlex(*sol, solution))
       {
-        solutionWasAddedToCompareSol = true;
+        solutionWasAddedToCurrentBestSolutions = true;
         
-        sol = compareSol.insert(sol, solution);
+        sol = currentBestSolutions.insert(sol, solution);
         
         ++sol;
       }
       
-      if(!solutionWasAddedToCompareSol and dominates(*sol, solution, true))
+      if(!solutionWasAddedToCurrentBestSolutions and dominates(*sol, solution, true))
       {
         addSolution = false;
         
         break;
       }
       
-      if(solutionWasAddedToCompareSol)
+      if(solutionWasAddedToCurrentBestSolutions)
       {
         if(dominates(solution, *sol, true))
         {
-          sol = compareSol.erase(sol);
+          sol = currentBestSolutions.erase(sol);
           --sol;
         }
       }
@@ -297,33 +185,33 @@ void DP::maintainNonDominated(static_vector& solution, int validRound, std::list
   
     validRounds_.push_back(validRoundsForNewSolution);
     
-    if(!solutionWasAddedToCompareSol)
+    if(!solutionWasAddedToCurrentBestSolutions)
     {
-      compareSol.push_back(solution);
+      currentBestSolutions.push_back(solution);
     }
   }
 }
 //todo: should be rewritten according to maintainNonDoniated
-void DP::keepNonDominated(static_vector &newSolution, std::list<static_vector> &compareSol)
+void DP::keepNonDominated(static_vector &newSolution, std::list<static_vector> &currentBestSolutions)
 {
   bool newSolutionIsGreater = false;
   
   bool dominated = false;
   
-  if(compareSol.empty())
+  if(currentBestSolutions.empty())
   {
-    compareSol.push_back(newSolution);
+    currentBestSolutions.push_back(newSolution);
     
     return;
   }
   
-  for (auto sol = compareSol.begin(); sol != compareSol.end(); ++sol)
+  for (auto sol = currentBestSolutions.begin(); sol != currentBestSolutions.end(); ++sol)
   {
     if(!newSolutionIsGreater and !dlex(*sol, newSolution))
     {
       newSolutionIsGreater = true;
       
-      sol = compareSol.insert(sol, newSolution);
+      sol = currentBestSolutions.insert(sol, newSolution);
       
       ++sol;
     }
@@ -338,7 +226,7 @@ void DP::keepNonDominated(static_vector &newSolution, std::list<static_vector> &
     {
       if(dominates(newSolution, *sol, true))
       {
-        sol = compareSol.erase(sol);
+        sol = currentBestSolutions.erase(sol);
         --sol;
       }
     }
@@ -346,8 +234,127 @@ void DP::keepNonDominated(static_vector &newSolution, std::list<static_vector> &
   
   if(!dominated and !newSolutionIsGreater)
   {
-    compareSol.push_back(newSolution);
+    currentBestSolutions.push_back(newSolution);
   }
+}
+
+int DP::removeWithBetterExtension(std::list<static_vector>& currentBestSolutions)
+{
+  //! sort remaining elements
+  std::vector<elementWithOrderValue> maxOrder;
+  
+  maxOrder.reserve(elementManager_.getNumberOfElements() - numberOfCurrentElement_);
+  
+  std::vector<elementWithOrderValue> sumOrder = maxOrder;//todo: element with value should use direct value and not pointer
+  
+  elementManager_.removeElementFromOrder(numberOfCurrentElement_);
+  
+  for(auto ele = elementManager_.getElements().begin() + numberOfCurrentElement_; ele != elementManager_.getElements().end(); ++ele)
+  {
+    float sum = 0;
+    
+    for (auto h : functionsToCompare_)
+    {
+      sum += ele->posOrderValueWeightRatio_[h - 1];
+    }
+    
+    sumOrder.emplace_back( &(*ele), sum);
+    
+    float val = 0;
+    
+    for (auto h : functionsToCompare_)
+    {
+      if(val < ele->posOrderValueWeightRatio_[h - 1])
+      {
+        val = ele->posOrderValueWeightRatio_[h - 1];
+      }
+    }
+    
+    val += sum / (float)( elementManager_.getNumberOfElements() * numberOfFunctions_);
+    
+    maxOrder.emplace_back(&(*ele), val);
+  }
+  
+  std::sort(sumOrder.begin(), sumOrder.end());
+  
+  std::sort(maxOrder.begin(), maxOrder.end());
+  
+  //!generate set F from paper
+  std::list<static_vector> compareSolF;
+  
+  for (auto sol: currentBestSolutions)
+  {
+    for (auto &ele : sumOrder)
+    {
+      if(sol.front() + ele.ele_->weight_ <= capacity_)
+      {
+        sol.front() += ele.ele_->weight_;
+        
+        for (int idx = 1; idx <= numberOfFunctions_; ++idx)
+        {
+          sol[idx] += ele.ele_->values_[functionsToCompare_[idx - 1] - 1];
+        }
+      }
+    }
+    keepNonDominated(sol, compareSolF);
+  }
+  
+  for (auto sol: currentBestSolutions)
+  {
+    for (auto &ele : maxOrder)
+    {
+      if(sol.front() + ele.ele_->weight_ <= capacity_)
+      {
+        sol.front() += ele.ele_->weight_;
+        
+        for (int idx = 1; idx <= numberOfFunctions_; ++idx)
+        {
+          sol[idx] += ele.ele_->values_[functionsToCompare_[idx - 1] - 1];
+        }
+      }
+    }
+    keepNonDominated(sol, compareSolF);
+  }
+  
+  //!calculate number of solutions that should be removed
+  int numberOfElementsToRemove = 0;
+  
+  for (auto &sol: solutions_)
+  {
+    static_vector upperBoundOfSol(upperBound(sol));
+    
+    bool remove = false;
+    
+    for (auto &compSol : compareSolF)
+    {
+      if (dlex(compSol, upperBoundOfSol))
+      {
+        if(dominates(compSol, upperBoundOfSol, true))
+        {
+          if(!std::equal(compSol.begin() + 1, compSol.end(), upperBoundOfSol.begin() + 1))
+          {
+            remove = true;
+            break;
+          }
+        }
+      }
+      else
+      {
+        break;
+      }
+    }
+    
+    if(remove)
+    {
+      ++numberOfElementsToRemove;
+    }
+    else
+    {
+      break;
+    }
+  }
+  
+  return numberOfElementsToRemove;
 }
 
 static_vector DP::upperBound(static_vector &sol)

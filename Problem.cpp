@@ -172,3 +172,20 @@ ElementManager &Problem::getEleManager()
 {
   return eleManager_;
 }
+
+int Problem::getNumberOfElements()
+{
+  return eleManager_.getNumberOfElements();
+}
+
+std::vector<int> Problem::getVectorOfAllFunctions_()
+{
+  std::vector<int> functionsToCompare(numberOfFunctions_, 0);
+  
+  for (int i = 0; i < numberOfFunctions_; ++i)
+  {
+    functionsToCompare[i] = i + 1;
+  }
+  
+  return functionsToCompare;
+}

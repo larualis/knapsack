@@ -5,7 +5,8 @@
 #include <chrono>
 #include <cmath>
 #include "RestrictedSolution.h"
-#include "../DP.h"
+#include "../DP/NormalDP.h"
+#include "../DP/RestrictedDP.h"
 
 void RestrictedSolution::generateSolutin()
 {
@@ -16,7 +17,7 @@ void RestrictedSolution::generateSolutin()
   
   for (int i = 0; i < problem_.getRestrictedFunctions().size(); ++i)
   {
-    DP singleDP(problem_, std::vector<int> {problem_.getRestrictedFunctions()[i]});
+    NormalDP singleDP(problem_, std::vector<int> {problem_.getRestrictedFunctions()[i]});
   
     singleDP.run();
     
@@ -42,7 +43,7 @@ void RestrictedSolution::generateSolutin()
   rDP.run();
   
   //! final DP
-  DP finalDP(problem_, rDP.getPruningValues());
+  RestrictedDP finalDP(problem_, rDP.getPruningValues());
   
   finalDP.run();
   

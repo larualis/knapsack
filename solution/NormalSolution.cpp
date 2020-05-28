@@ -4,18 +4,11 @@
 
 #include <chrono>
 #include "NormalSolution.h"
-#include "../DP.h"
+#include "../DP/NormalDP.h"
 
 void NormalSolution::generateSolutin()
 {
-  std::vector<int> functionsToCompare(problem_.getNumberOfFunctions(), 0);
-  
-  for (int i = 0; i < problem_.getNumberOfFunctions(); ++i)
-  {
-    functionsToCompare[i] = i + 1;
-  }
-  
-  DP dp(problem_, functionsToCompare);
+  NormalDP dp(problem_, problem_.getVectorOfAllFunctions_());
   
   auto t1 = std::chrono::high_resolution_clock::now();
   dp.run();

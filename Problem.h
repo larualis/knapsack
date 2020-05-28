@@ -38,6 +38,10 @@ public:
   const std::vector<int> &getRestrictedFunctions() const;
   
   const std::vector<float> &getSlack() const;
+  
+  int getNumberOfElements();
+  
+  std::vector<int> getVectorOfAllFunctions_();
 
 private:
   

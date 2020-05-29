@@ -20,6 +20,6 @@ void Pruning::updateRemovedSolutions(bool solutionWasRemoved)
 {
   if(solutionWasRemoved)
   {
-    ++removedSolutionsPerRound_[numberOfCurrentElement_];
+    ++removedSolutionsPerRound_[numberOfCurrentElement_ - 1];
   }
 }

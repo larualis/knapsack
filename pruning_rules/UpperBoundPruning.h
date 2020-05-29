@@ -7,7 +7,6 @@
 
 
 #include "Pruning.h"
-#include "../SolutionComparer.h"
 #include "ParetoPruning.h"
 
 
@@ -28,8 +27,6 @@ private:
   int numberOfFunctions_;
   
   int capacity_;
-  
-  SolutionComparer solComp_;
   
   ParetoPruning paretoPruning_;
   

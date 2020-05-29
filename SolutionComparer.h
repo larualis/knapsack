@@ -8,20 +8,46 @@
 
 #include "ElementManager.h"
 
-class SolutionComparer
+namespace solutionComparer
 {
-public:
-  SolutionComparer(int numberOfFunctions);
+  inline bool dominates(static_vector &sol1, static_vector &sol2)
+  {
+    int numberOfFunctions = sol1.size() - 1;
+    for (int i = 1; i <= numberOfFunctions; ++i)
+    {
+      if(sol1[i] < sol2[i])
+      {
+        return false;
+      }
+    }
+    
+    return true;
+  }
   
-  bool dominates(static_vector& sol1, static_vector& sol2);
+  inline bool dlex(static_vector &sol1, static_vector &sol2)
+  {
+    int numberOfFunctions = sol1.size() - 1;
+    
+    for (int i = 1; i <= numberOfFunctions; ++i)
+    {
+      if (sol1[i] != sol2[i])
+      {
+        return sol1[i] > sol2[i];
+      }
+    }
+    return true;
+  }
   
-  bool dlex(static_vector& sol1, static_vector& sol2);
   
-  bool lex(static_vector& sol1, static_vector& sol2);
-
-private:
-  int numberOfFunctions_;
-};
-
+  inline bool lex(static_vector &sol1, static_vector &sol2)
+  {
+    if (sol1[0] < sol2[0])
+    {
+      return true;
+    }
+    
+    return sol1[0] == sol2[0] and dlex(sol1, sol2);
+  }
+}
 
 #endif //KNAPSACK_SOLUTIONCOMPARER_H

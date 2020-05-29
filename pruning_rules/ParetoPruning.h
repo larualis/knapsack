@@ -7,7 +7,6 @@
 
 
 #include "Pruning.h"
-#include "../SolutionComparer.h"
 
 class ParetoPruning : public Pruning
 {
@@ -23,8 +22,6 @@ public:
 private:
   
   std::list<static_vector>* currentBestSolutions_;
-  
-  SolutionComparer solComp_;
   
   std::_List_iterator<static_vector> placeToAddSolution_;
 };

@@ -3,10 +3,10 @@
 //
 
 #include "ParetoPruning.h"
+#include "../SolutionComparer.h"
 
 ParetoPruning::ParetoPruning(int numberOfElements, int numberOfFunctions):
     Pruning(numberOfElements),
-    solComp_(numberOfFunctions),
     currentBestSolutions_(nullptr)
 {
 
@@ -27,14 +27,14 @@ bool ParetoPruning::shouldSolutionBeRemoved(static_vector& solution)
   
   for (; sol != currentBestSolutions_->end(); ++sol)
   {
-    if(!solComp_.dlex(*sol, solution))
+    if(!solutionComparer::dlex(*sol, solution))
     {
       rval = false;
       
       break;
     }
     
-    if(solComp_.dominates(*sol, solution))
+    if(solutionComparer::dominates(*sol, solution))
     {
       rval = true;
       
@@ -57,7 +57,7 @@ void ParetoPruning::solutionWasAdded(static_vector& solution)
   
   for( ;sol != currentBestSolutions_->end(); ++sol)
   {
-    if(solComp_.dominates(solution, *sol))
+    if(solutionComparer::dominates(solution, *sol))
     {
       sol = currentBestSolutions_->erase(sol);
       

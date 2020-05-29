@@ -29,8 +29,6 @@ private:
   
   std::vector<int> functionsToCompare_;
   
-  SolutionComparer solComp;
-  
   std::vector<static_vector> solutions_;
   
   RemainingWeightPruning remainingWeightPruning_;

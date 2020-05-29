@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "RestrictedDP.h"
+#include "../SolutionComparer.h"
 
 RestrictedDP::RestrictedDP(Problem& problem, std::vector<std::vector<PruningSolution>>& pruningValues):
     problem_(problem),
@@ -12,7 +13,6 @@ RestrictedDP::RestrictedDP(Problem& problem, std::vector<std::vector<PruningSolu
     numberOfFunctions_(problem.getNumberOfFunctions()),
     capacity_(problem.getCapacity()),
     numberOfCurrentElement_(0),
-    solComp(problem.getNumberOfFunctions()),
     remainingWeightPruning_(problem.getNumberOfElements(), problem.getSumOfWeights(), problem.getCapacity()),
     restrictedPruning_(problem.getNumberOfElements(), pruningValues, problem.getRestrictedFunctions()),
     paretoPruner_(problem.getNumberOfElements(), problem.getNumberOfFunctions()),
@@ -65,7 +65,7 @@ void RestrictedDP::run()
         newSolution[idx] = previousSolutions[idxNewSolution][idx] + element.values_.at(functionsToCompare_[idx - 1] - 1);
       }
       
-      while (idxOldSolution < previousSolutions.size() and solComp.lex(previousSolutions[idxOldSolution], newSolution))
+      while (idxOldSolution < previousSolutions.size() and solutionComparer::lex(previousSolutions[idxOldSolution], newSolution))
       {
         handleNewSolution(previousSolutions[idxOldSolution], idxOldSolution, currentBestSolutions);
         

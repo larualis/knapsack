@@ -5,6 +5,7 @@
 #include <cmath>
 #include <algorithm>
 #include "UpperBoundPruning.h"
+#include "../SolutionComparer.h"
 
 
 UpperBoundPruning::UpperBoundPruning(int numberOfElements, std::vector<int> functionsToCompare, int capacity,
@@ -14,7 +15,6 @@ UpperBoundPruning::UpperBoundPruning(int numberOfElements, std::vector<int> func
                                      functionsToCompare_(functionsToCompare),
                                       numberOfFunctions_(functionsToCompare.size()),
                                       capacity_(capacity),
-                                      solComp_(functionsToCompare.size()),
                                       paretoPruning_(numberOfElements, functionsToCompare.size())
 {
 }
@@ -117,9 +117,9 @@ bool UpperBoundPruning::shouldSolutionBeRemoved(static_vector &solution)
   
   for (auto &compSol : greedyCompletionOfCurrentBestSolution_)
   {
-    if (solComp_.dlex(compSol, upperBoundOfSol))
+    if (solutionComparer::dlex(compSol, upperBoundOfSol))
     {
-      if(solComp_.dominates(compSol, upperBoundOfSol))
+      if(solutionComparer::dominates(compSol, upperBoundOfSol))
       {
         if(!std::equal(compSol.begin() + 1, compSol.end(), upperBoundOfSol.begin() + 1))
         {

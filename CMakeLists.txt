@@ -30,7 +30,6 @@ add_executable(Knapsack
         pruning_rules/RemainingWeightPruning.h
         pruning_rules/Pruning.cpp
         pruning_rules/Pruning.h
-        SolutionComparer.cpp
         SolutionComparer.h
         DP/NormalDP.cpp
         DP/NormalDP.h

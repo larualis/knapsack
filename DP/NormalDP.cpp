@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "NormalDP.h"
+#include "../SolutionComparer.h"
 
 NormalDP::NormalDP(Problem &problem, std::vector<int> functionsToCompare):
     problem_(problem),
@@ -12,7 +13,6 @@ NormalDP::NormalDP(Problem &problem, std::vector<int> functionsToCompare):
     numberOfFunctions_(functionsToCompare.size()),
     capacity_(problem.getCapacity()),
     numberOfCurrentElement_(0),
-    solComp(functionsToCompare.size()),
     remainingWeightPruning_(problem.getNumberOfElements(), problem.getSumOfWeights(), problem.getCapacity()),
     paretoPruner_(problem.getNumberOfElements(), functionsToCompare.size()),
     upperBoundPruning_(problem.getNumberOfElements(), functionsToCompare, problem.getCapacity(), problem.getEleManager())
@@ -62,7 +62,7 @@ void NormalDP::run()
         newSolution[idx] = previousSolutions[idxNewSolution][idx] + element.values_.at(functionsToCompare_[idx - 1] - 1);
       }
       
-      while (idxOldSolution < previousSolutions.size() and solComp.lex(previousSolutions[idxOldSolution], newSolution))
+      while (idxOldSolution < previousSolutions.size() and solutionComparer::lex(previousSolutions[idxOldSolution], newSolution))
       {
         handleNewSolution(previousSolutions[idxOldSolution], currentBestSolutions);
         

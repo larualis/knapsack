@@ -12,7 +12,7 @@ using static_vector = boost::container::static_vector<int, NUMBEROFFUNCTIONS + 1
 #include <vector>
 #include <list>
 
-struct element
+struct Element
 {
   std::vector<int> values_;
   
@@ -24,7 +24,7 @@ struct element
   
   int SumOfposOrderValueWeightRatio_;
   
-  explicit element(std::vector<int>& rawElement):
+  explicit Element(std::vector<int>& rawElement):
       weight_(rawElement.front()),
       SumOfposOrderValueWeightRatio_(0),
       values_(rawElement.begin() + 1, rawElement.end())
@@ -40,17 +40,17 @@ struct element
   }
 };
 
-struct elementWithOrderValue
+struct ElementWithOrderValue
 {
-  element* ele_;
+  Element* ele_;
   float valueForOrdering_;
   
-  elementWithOrderValue( element* ele, float val):
+  ElementWithOrderValue(Element* ele, float val):
       ele_(ele),
       valueForOrdering_(val)
   {}
   
-  bool operator < (const elementWithOrderValue& str) const
+  bool operator < (const ElementWithOrderValue& str) const
   {
     return (valueForOrdering_ < str.valueForOrdering_);
   }
@@ -59,7 +59,7 @@ struct elementWithOrderValue
 class ElementManager
 {
 private:
-  std::vector<element> elements_;
+  std::vector<Element> elements_;
   
   int numberOfElements_;
   
@@ -86,7 +86,7 @@ public:
   
   const std::vector<std::vector<static_vector>> &getOrderedRawElementsValue() const;
   
-  std::vector<element> &getElements();
+  std::vector<Element> &getElements();
   
   int getNumberOfElements() const;
   

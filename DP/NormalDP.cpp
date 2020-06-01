@@ -64,19 +64,19 @@ void NormalDP::run()
       
       while (idxOldSolution < previousSolutions.size() and solutionComparer::lex(previousSolutions[idxOldSolution], newSolution))
       {
-        handleNewSolution(previousSolutions[idxOldSolution], currentBestSolutions);
+        handleNewSolution(previousSolutions[idxOldSolution]);
         
         ++idxOldSolution;
       }
   
-      handleNewSolution(newSolution, currentBestSolutions);
+      handleNewSolution(newSolution);
       
       ++idxNewSolution;
     }
     
     while(idxOldSolution < previousSolutions.size())
     {
-      handleNewSolution(previousSolutions[idxOldSolution], currentBestSolutions);
+      handleNewSolution(previousSolutions[idxOldSolution]);
       
       ++idxOldSolution;
     }
@@ -113,7 +113,7 @@ void NormalDP::run()
   }
 }
 
-void NormalDP::handleNewSolution(static_vector &solution, std::list<static_vector> &currentBestSolutions)
+void NormalDP::handleNewSolution(static_vector &solution)
 {
   if(!paretoPruner_.shouldSolutionBeRemoved(solution))
   {

@@ -256,7 +256,7 @@ int main(int argc, char *argv[])
     
     if(numberOfFunctionsInInput(filePath) > NUMBEROFFUNCTIONS)
     {
-      std::cout<<"macro number for element size is too small" << std::endl;
+      std::cout<<"macro number for Element size is too small" << std::endl;
       
       std::cout<< "macro number = " << NUMBEROFFUNCTIONS << std::endl;
       

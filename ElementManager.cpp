@@ -19,8 +19,8 @@ numberOfFunctions_(numberOfFunctions)
 
 void ElementManager::generateOrder()
 {
-  //!generate order and save it in each element
-  std::vector<elementWithOrderValue> orderVector;
+  //!generate order and save it in each Element
+  std::vector<ElementWithOrderValue> orderVector;
   
   orderVector.reserve(numberOfElements_);
   
@@ -28,7 +28,7 @@ void ElementManager::generateOrder()
   {
     for (auto &ele: elements_)
     {
-      orderVector.emplace_back(elementWithOrderValue(&ele, ele.valueWeightRatios_[i]));
+      orderVector.emplace_back(ElementWithOrderValue(&ele, ele.valueWeightRatios_[i]));
     }
     
     std::sort(orderVector.rbegin(), orderVector.rend());
@@ -71,7 +71,7 @@ void ElementManager::generateOrder()
 
 void ElementManager::makeSumOrder(std::vector<int> functions)
 {
-  std::vector<elementWithOrderValue> orderVector;
+  std::vector<ElementWithOrderValue> orderVector;
   
   orderVector.reserve(numberOfElements_);
   
@@ -86,12 +86,12 @@ void ElementManager::makeSumOrder(std::vector<int> functions)
     
     sumOfOrder += (float) ele.SumOfposOrderValueWeightRatio_ / (float)( numberOfElements_ * numberOfFunctions_);
     
-    orderVector.emplace_back(elementWithOrderValue(&ele, sumOfOrder));
+    orderVector.emplace_back(ElementWithOrderValue(&ele, sumOfOrder));
   }
   
   std::sort(orderVector.begin(), orderVector.end());
   
-  std::vector<element> sortedElements;
+  std::vector<Element> sortedElements;
   
   sortedElements.reserve(numberOfElements_);
   
@@ -105,7 +105,7 @@ void ElementManager::makeSumOrder(std::vector<int> functions)
 
 void ElementManager::makeMaxOrder(std::vector<int> functions)
 {
-  std::vector<elementWithOrderValue> orderVector;
+  std::vector<ElementWithOrderValue> orderVector;
   
   orderVector.reserve(numberOfElements_);
   
@@ -123,12 +123,12 @@ void ElementManager::makeMaxOrder(std::vector<int> functions)
   
     greatestPos += (float) ele.SumOfposOrderValueWeightRatio_ / (float)( numberOfElements_ * numberOfFunctions_);
     
-    orderVector.emplace_back(elementWithOrderValue(&ele, greatestPos));
+    orderVector.emplace_back(ElementWithOrderValue(&ele, greatestPos));
   }
   
   std::sort(orderVector.begin(), orderVector.end());
   
-  std::vector<element> sortedElements;
+  std::vector<Element> sortedElements;
   
   sortedElements.reserve(numberOfElements_);
   
@@ -142,7 +142,7 @@ void ElementManager::makeMaxOrder(std::vector<int> functions)
 
 void ElementManager::makeMinOrder(std::vector<int> functions)
 {
-  std::vector<elementWithOrderValue> orderVector;
+  std::vector<ElementWithOrderValue> orderVector;
   
   orderVector.reserve(numberOfElements_);
   
@@ -160,12 +160,12 @@ void ElementManager::makeMinOrder(std::vector<int> functions)
   
     smallestPos += (float) ele.SumOfposOrderValueWeightRatio_ / (float)( numberOfElements_ * numberOfFunctions_);
     
-    orderVector.emplace_back(elementWithOrderValue(&ele, smallestPos));
+    orderVector.emplace_back(ElementWithOrderValue(&ele, smallestPos));
   }
   
   std::sort(orderVector.begin(), orderVector.end());
   
-  std::vector<element> sortedElements;
+  std::vector<Element> sortedElements;
   
   sortedElements.reserve(numberOfElements_);
   
@@ -205,7 +205,7 @@ void ElementManager::reverseElements()
   reverse(elements_.begin(),elements_.end());
 }
 
-std::vector<element> &ElementManager::getElements()
+std::vector<Element> &ElementManager::getElements()
 {
   return elements_;
 }

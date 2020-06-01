@@ -67,19 +67,19 @@ void RestrictedDP::run()
       
       while (idxOldSolution < previousSolutions.size() and solutionComparer::lex(previousSolutions[idxOldSolution], newSolution))
       {
-        handleNewSolution(previousSolutions[idxOldSolution], idxOldSolution, currentBestSolutions);
+        handleNewSolution(previousSolutions[idxOldSolution], idxOldSolution);
         
         ++idxOldSolution;
       }
       
-      handleNewSolution(newSolution, -1, currentBestSolutions);
+      handleNewSolution(newSolution, -1);
       
       ++idxNewSolution;
     }
     
     while(idxOldSolution < previousSolutions.size())
     {
-      handleNewSolution(previousSolutions[idxOldSolution], idxOldSolution, currentBestSolutions);
+      handleNewSolution(previousSolutions[idxOldSolution], idxOldSolution);
       
       ++idxOldSolution;
     }
@@ -118,7 +118,7 @@ void RestrictedDP::run()
   }
 }
 
-void RestrictedDP::handleNewSolution(static_vector &solution, int idxOldSolution, std::list<static_vector> &currentBestSolutions)
+void RestrictedDP::handleNewSolution(static_vector &solution, int idxOldSolution)
 {
   if( !restrictedPruning_.shouldSolutionBeRemoved(solution, idxOldSolution) and !paretoPruner_.shouldSolutionBeRemoved(solution))
   {

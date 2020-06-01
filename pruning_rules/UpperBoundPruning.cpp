@@ -24,11 +24,11 @@ void UpperBoundPruning::setupForNextElement(std::list<static_vector>& currentBes
   ++numberOfCurrentElement_;
   
   //! sort remaining elements
-  std::vector<elementWithOrderValue> maxOrder;
+  std::vector<ElementWithOrderValue> maxOrder;
   
   maxOrder.reserve(elementManager_.getNumberOfElements() - numberOfCurrentElement_);
   
-  std::vector<elementWithOrderValue> sumOrder = maxOrder;//todo: element with value should use direct value and not pointer
+  std::vector<ElementWithOrderValue> sumOrder = maxOrder;//todo: Element with value should use direct value and not pointer
   
   elementManager_.removeElementFromOrder(numberOfCurrentElement_);
   
@@ -153,7 +153,7 @@ static_vector UpperBoundPruning::upperBound(static_vector &sol)
     
     int remainingCapacity = capacity_ - sol.front();
     
-    int i = -1; //c_i reflects in for loop the last element added
+    int i = -1; //c_i reflects in for loop the last Element added
     
     int numberOfRemainingElements = elementsOrdered.size();
     
@@ -193,7 +193,7 @@ static_vector UpperBoundPruning::upperBound(static_vector &sol)
       rval[pos] += max;
     }
     else
-    {//! if last element doesn't fit, then use upper bound by adding residual capacity of current element
+    {//! if last Element doesn't fit, then use upper bound by adding residual capacity of current Element
       rval[pos] += std::floor(remainingCapacity * elementsOrdered[i][idxAccess]/elementsOrdered[i].front());//todo: divison have already been done, can take direct value
     }
   }

@@ -41,7 +41,7 @@ public:
   
   void run();
   
-  void handleNewSolution(static_vector& solution, std::list<static_vector>& currentBestSolutions);
+  void handleNewSolution(static_vector& solution);
   
   std::vector<std::vector<int>> getNumberOfRemovedSolutionsPerRound();
   

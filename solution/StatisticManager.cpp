@@ -23,6 +23,8 @@ void StatisticManager::addSolution(Solution& sol)
   solutionSize_.push_back(sol.getSolutionSize());
   
   solutions_.push_back(sol.getSolutions());
+  
+  prunedPerRound_.push_back(sol.getNumberOfRemovedSolutionsPerRound());
 }
 
 void StatisticManager::printStatistics(bool printValues)
@@ -61,6 +63,8 @@ void StatisticManager::printStatistics(bool printValues)
   std::cout << "size range from " << *std::min_element(solutionSize_.begin(), solutionSize_.end()) << " to " << *std::max_element(solutionSize_.begin(), solutionSize_.end())<<"\n";
   
   std::cout << "\n";
+  
+  printDetailedPruning();
 }
 
 void StatisticManager::printCompareToOtherSolutions(StatisticManager &otherManager, bool detailed)
@@ -173,4 +177,28 @@ const std::vector<int> &StatisticManager::getRuntime() const
 const std::vector<int> &StatisticManager::getSolutionSize() const
 {
   return solutionSize_;
+}
+
+void StatisticManager::printDetailedPruning()
+{
+  
+  int counter = 0;
+  for(auto& prunedPerRoundThisElement : prunedPerRound_)
+  {
+    ++counter;
+    
+    std::cout<< "removed in Knapsack " << counter << "\n";
+    
+    int counter2 = 0;
+    for(auto& prunedPerRoundByRule: prunedPerRoundThisElement)
+    {
+      ++counter2;
+      std::cout<< "removed by Rule " << counter2 << "\n";
+      for(auto numberRemovedThisRound: prunedPerRoundByRule)
+      {
+        std::cout<< numberRemovedThisRound <<" ";
+      }
+      std::cout<<"\n";
+    }
+  }
 }

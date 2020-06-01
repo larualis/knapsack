@@ -53,6 +53,8 @@ void RestrictedSolution::generateSolutin()
   
   solutions_ = finalDP.getSolutions();
   
+  numberOfRemovedSolutionsPerRound_ = finalDP.getNumberOfRemovedSolutionsPerRound();
+  
 }
 
 const std::vector<int> &RestrictedSolution::getMinimalFunctionValues() const

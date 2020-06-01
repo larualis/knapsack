@@ -18,7 +18,9 @@ private:
   std::vector<int> solutionSize_;
   
   std::list<std::vector<static_vector>> solutions_;
-
+  
+  std::vector<std::vector<std::vector<int>>> prunedPerRound_;
+  
   float countKnapsack_;
   
   std::string pathToFiles_;
@@ -41,6 +43,7 @@ public:
   
   void printCompareToOtherSolutions(StatisticManager& otherManager, bool detailed);
   
+  void printDetailedPruning();
 };
 
 

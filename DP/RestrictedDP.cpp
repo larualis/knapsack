@@ -120,7 +120,7 @@ void RestrictedDP::run()
 
 void RestrictedDP::handleNewSolution(static_vector &solution, int idxOldSolution, std::list<static_vector> &currentBestSolutions)
 {
-  if(!paretoPruner_.shouldSolutionBeRemoved(solution) and !restrictedPruning_.shouldSolutionBeRemoved(solution, idxOldSolution))
+  if( !restrictedPruning_.shouldSolutionBeRemoved(solution, idxOldSolution) and !paretoPruner_.shouldSolutionBeRemoved(solution))
   {
     solutions_.push_back(solution);
     
@@ -133,4 +133,19 @@ void RestrictedDP::handleNewSolution(static_vector &solution, int idxOldSolution
 const std::vector<static_vector> &RestrictedDP::getSolutions() const
 {
   return solutions_;
+}
+
+std::vector<std::vector<int>> RestrictedDP::getNumberOfRemovedSolutionsPerRound()
+{
+  std::vector<std::vector<int>> rval;
+  
+  rval.push_back(remainingWeightPruning_.getNumberOfRemovedSolutionsPerRound());
+  
+  rval.push_back(restrictedPruning_.getNumberOfRemovedSolutionsPerRound());
+  
+  rval.push_back(paretoPruner_.getNumberOfRemovedSolutionsPerRound());
+  
+  rval.push_back(upperBoundPruning_.getNumberOfRemovedSolutionsPerRound());
+  
+  return rval;
 }

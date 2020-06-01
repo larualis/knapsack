@@ -6,20 +6,25 @@
 #include "Pruning.h"
 
 Pruning::Pruning(int numberOfElements):
-removedSolutionsPerRound_(numberOfElements, 0),
-numberOfCurrentElement_(0)
+    numberOfRemovedSolutionsPerRound_(numberOfElements, 0),
+    numberOfCurrentElement_(0)
 {
 }
 
-int Pruning::removedSolutions()
+int Pruning::numberOfRemovedSolutions()
 {
-  return std::accumulate(removedSolutionsPerRound_.begin(), removedSolutionsPerRound_.end(), 0);
+  return std::accumulate(numberOfRemovedSolutionsPerRound_.begin(), numberOfRemovedSolutionsPerRound_.end(), 0);
 }
 
 void Pruning::updateRemovedSolutions(bool solutionWasRemoved)
 {
   if(solutionWasRemoved)
   {
-    ++removedSolutionsPerRound_[numberOfCurrentElement_ - 1];
+    ++numberOfRemovedSolutionsPerRound_[numberOfCurrentElement_ - 1];
   }
+}
+
+std::vector<int> Pruning::getNumberOfRemovedSolutionsPerRound()
+{
+  return numberOfRemovedSolutionsPerRound_;
 }

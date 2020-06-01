@@ -18,4 +18,6 @@ void NormalSolution::generateSolutin()
   solutions_ = dp.getSolutions();
   
   runtime_ = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+  
+  numberOfRemovedSolutionsPerRound_ = dp.getNumberOfRemovedSolutionsPerRound();
 }

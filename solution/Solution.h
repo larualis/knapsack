@@ -17,6 +17,10 @@ protected:
   
   int runtime_;
   
+  std::vector<std::vector<int>> numberOfRemovedSolutionsPerRound_;
+  
+protected:
+  
   std::vector<static_vector> solutions_;
   
 public:
@@ -40,6 +44,11 @@ public:
   const std::vector<static_vector> &getSolutions() const
   {
     return solutions_;
+  }
+  
+  const std::vector<std::vector<int>> &getNumberOfRemovedSolutionsPerRound() const
+  {
+    return numberOfRemovedSolutionsPerRound_;
   }
   
   virtual void generateSolutin(){};

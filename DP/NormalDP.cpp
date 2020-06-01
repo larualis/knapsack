@@ -128,3 +128,15 @@ const std::vector<static_vector> &NormalDP::getSolutions() const
   return solutions_;
 }
 
+std::vector<std::vector<int>> NormalDP::getNumberOfRemovedSolutionsPerRound()
+{
+  std::vector<std::vector<int>> rval;
+  
+  rval.push_back(remainingWeightPruning_.getNumberOfRemovedSolutionsPerRound());
+  
+  rval.push_back(paretoPruner_.getNumberOfRemovedSolutionsPerRound());
+  
+  rval.push_back(upperBoundPruning_.getNumberOfRemovedSolutionsPerRound());
+  
+  return rval;
+}

@@ -12,7 +12,7 @@
 class Pruning
 {
 protected:
-  std::vector<int> removedSolutionsPerRound_;
+  std::vector<int> numberOfRemovedSolutionsPerRound_;
   
   int numberOfCurrentElement_;
   
@@ -21,7 +21,9 @@ protected:
 public:
   Pruning(int numberOfElements);
   
-  int removedSolutions();
+  int numberOfRemovedSolutions();
+  
+  std::vector<int> getNumberOfRemovedSolutionsPerRound();
 };
 
 

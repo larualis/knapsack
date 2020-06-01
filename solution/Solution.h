@@ -11,7 +11,7 @@
 
 class Solution
 {
-protected:
+private:
   
   Problem& problem_;
   
@@ -19,17 +19,11 @@ protected:
   
   std::vector<std::vector<int>> numberOfRemovedSolutionsPerRound_;
   
-protected:
-  
   std::vector<static_vector> solutions_;
   
 public:
   
-  Solution(Problem &problem):
-      problem_(problem),
-      runtime_(0)
-  {
-  }
+  Solution(Problem &problem);
   
   int getRuntime() const
   {
@@ -51,7 +45,11 @@ public:
     return numberOfRemovedSolutionsPerRound_;
   }
   
-  virtual void generateSolutin(){};
+  void makeNormalSolution();
+  
+  void makeRestrictedSolution();
+  
+  void makeApproxSolution();
   
 };
 

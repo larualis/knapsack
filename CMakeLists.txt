@@ -13,11 +13,8 @@ add_executable(Knapsack
         Problem.h
         ElementManager.cpp
         ElementManager.h
+        solution/Solution.cpp
         solution/Solution.h
-        solution/NormalSolution.cpp
-        solution/NormalSolution.h
-        solution/RestrictedSolution.cpp
-        solution/RestrictedSolution.h
         solution/StatisticManager.cpp
         solution/StatisticManager.h
         pruning_rules/ParetoPruning.cpp
@@ -34,4 +31,5 @@ add_executable(Knapsack
         DP/NormalDP.cpp
         DP/NormalDP.h
         DP/RestrictedDP.cpp
-        DP/RestrictedDP.h)
+        DP/RestrictedDP.h )
+        #pruning_rules/ApproxPruning.cpp pruning_rules/ApproxPruning.h DP/ApproxDP.cpp DP/ApproxDP.h )

@@ -1,24 +1,47 @@
 //
-// Created by rick on 04.05.20.
+// Created by rick on 01.06.20.
 //
 
 #include <chrono>
 #include <cmath>
-#include "RestrictedSolution.h"
+#include "Solution.h"
 #include "../DP/NormalDP.h"
+#include "../revDP.h"
 #include "../DP/RestrictedDP.h"
 
-void RestrictedSolution::generateSolutin()
+Solution::Solution(Problem &problem):
+    problem_(problem),
+    runtime_(0)
+{
+}
+
+void Solution::makeNormalSolution()
+{
+  NormalDP dp(problem_, problem_.getVectorOfAllFunctions_());
+  
+  auto t1 = std::chrono::high_resolution_clock::now();
+  dp.run();
+  auto t2 = std::chrono::high_resolution_clock::now();
+  
+  
+  solutions_ = dp.getSolutions();
+  
+  runtime_ = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+  
+  numberOfRemovedSolutionsPerRound_ = dp.getNumberOfRemovedSolutionsPerRound();
+}
+
+void Solution::makeRestrictedSolution()
 {
   //! restricted DP and data extraction
   auto t1 = std::chrono::high_resolution_clock::now();
   
-   minimalFunctionValues_ = std::vector<int>(problem_.getRestrictedFunctions().size(), 0);
+  std::vector<int> minimalFunctionValues_ = std::vector<int>(problem_.getRestrictedFunctions().size(), 0);
   
   for (int i = 0; i < problem_.getRestrictedFunctions().size(); ++i)
   {
     NormalDP singleDP(problem_, std::vector<int> {problem_.getRestrictedFunctions()[i]});
-  
+    
     singleDP.run();
     
     auto solutions = singleDP.getSolutions();
@@ -36,7 +59,7 @@ void RestrictedSolution::generateSolutin()
   {
     minimalFunctionValues_[i] = std::floor(minimalFunctionValues_[i] - problem_.getSlack()[i]);
   }
-
+  
   //! rev DP
   revDP rDP(problem_, minimalFunctionValues_);
   
@@ -55,9 +78,4 @@ void RestrictedSolution::generateSolutin()
   
   numberOfRemovedSolutionsPerRound_ = finalDP.getNumberOfRemovedSolutionsPerRound();
   
-}
-
-const std::vector<int> &RestrictedSolution::getMinimalFunctionValues() const
-{
-  return minimalFunctionValues_;
 }

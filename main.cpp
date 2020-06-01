@@ -2,8 +2,6 @@
 #include <filesystem>
 #include <vector>
 #include "Problem.h"
-#include "solution/NormalSolution.h"
-#include "solution/RestrictedSolution.h"
 #include "solution/StatisticManager.h"
 
 template <class x>
@@ -273,9 +271,9 @@ int main(int argc, char *argv[])
     {
       case normal:
       {
-        NormalSolution sol(problem);
+        Solution sol(problem);
         
-        sol.generateSolutin();
+        sol.makeNormalSolution();
         
         manager.addSolution(sol);
         break;
@@ -284,9 +282,9 @@ int main(int argc, char *argv[])
       {
         problem.reverseElements();
   
-        RestrictedSolution sol(problem);
+        Solution sol(problem);
         
-        sol.generateSolutin();
+        sol.makeRestrictedSolution();
   
         manager.addSolution(sol);
         break;
@@ -295,18 +293,18 @@ int main(int argc, char *argv[])
       {
         if(!std::filesystem::exists(pathToFiles + "/results_normal.txt"))
         {
-          NormalSolution normalSol(problem);
+          Solution normalSol(problem);
   
-          normalSol.generateSolutin();
+          normalSol.makeNormalSolution();
   
           manager.addSolution(normalSol);
         }
         
         problem.reverseElements();
   
-        RestrictedSolution restSol(problem);
+        Solution restSol(problem);
   
-        restSol.generateSolutin();
+        restSol.makeRestrictedSolution();
         
         secondManager.addSolution(restSol);
         break;

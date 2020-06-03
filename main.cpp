@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
    * --Type= 0 normal 1 restricted 2 compare 3 verifyResults
    * --ResFunc= number of Functions which should be restricted format: 1,3,6
    **/
-  enum Type {normal, restricted, compare, verifyResults};
+  enum Type {normal, restricted, approx, compare, verifyResults};
   
   Type type = Type::normal;
   
@@ -266,13 +266,13 @@ int main(int argc, char *argv[])
     Problem problem(filePath, restrictedFunctions, slack);
     
     problem.makeMaxOrder();
-    
+  
+    Solution sol(problem);
+  
     switch (type)
     {
       case normal:
       {
-        Solution sol(problem);
-        
         sol.makeNormalSolution();
         
         manager.addSolution(sol);
@@ -281,10 +281,15 @@ int main(int argc, char *argv[])
       case restricted:
       {
         problem.reverseElements();
-  
-        Solution sol(problem);
         
         sol.makeRestrictedSolution();
+  
+        manager.addSolution(sol);
+        break;
+      }
+      case approx:
+      {
+        sol.makeApproxSolution();
   
         manager.addSolution(sol);
         break;
@@ -297,16 +302,14 @@ int main(int argc, char *argv[])
   
           normalSol.makeNormalSolution();
   
-          manager.addSolution(normalSol);
+          secondManager.addSolution(normalSol);
         }
         
         problem.reverseElements();
-  
-        Solution restSol(problem);
-  
-        restSol.makeRestrictedSolution();
         
-        secondManager.addSolution(restSol);
+        sol.makeRestrictedSolution();
+  
+        manager.addSolution(sol);
         break;
       }
       case verifyResults:
@@ -334,18 +337,18 @@ int main(int argc, char *argv[])
   {
     if(std::filesystem::exists(pathToFiles + "/results_normal.txt"))
     {
-      manager.readFromFile(pathToFiles + "/results_normal.txt");
+      secondManager.readFromFile(pathToFiles + "/results_normal.txt");
     }
     else
     {
-      manager.writeStatistics();
+      secondManager.writeStatistics();
     }
-    
+  
+    secondManager.printStatistics(printSolutions);
+  
     manager.printStatistics(printSolutions);
     
-    secondManager.printStatistics(printSolutions);
-    
-    secondManager.printCompareToOtherSolutions(manager, false);
+    manager.printCompareToOtherSolutions(secondManager, false);
   }
 
   return 0;

@@ -5,10 +5,17 @@
 #ifndef KNAPSACK_ELEMENTMANAGER_H
 #define KNAPSACK_ELEMENTMANAGER_H
 
-#define NUMBEROFFUNCTIONS 3
+
+#define NUMBEROFFUNCTIONS 2
+
 #include <boost/container/static_vector.hpp>
 using static_vector = boost::container::static_vector<int, NUMBEROFFUNCTIONS + 1>;
 
+
+/**
+#include <vector>
+using static_vector = std::vector<int>;
+ **/
 #include <vector>
 #include <list>
 

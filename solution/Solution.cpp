@@ -8,6 +8,7 @@
 #include "../DP/NormalDP.h"
 #include "../revDP.h"
 #include "../DP/RestrictedDP.h"
+#include "../DP/ApproxDP.h"
 
 Solution::Solution(Problem &problem):
     problem_(problem),
@@ -18,6 +19,21 @@ Solution::Solution(Problem &problem):
 void Solution::makeNormalSolution()
 {
   NormalDP dp(problem_, problem_.getVectorOfAllFunctions_());
+  
+  auto t1 = std::chrono::high_resolution_clock::now();
+  dp.run();
+  auto t2 = std::chrono::high_resolution_clock::now();
+  
+  solutions_ = dp.getSolutions();
+  
+  runtime_ = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+  
+  numberOfRemovedSolutionsPerRound_ = dp.getNumberOfRemovedSolutionsPerRound();
+}
+
+void Solution::makeApproxSolution()
+{
+  ApproxDP dp(problem_, problem_.getVectorOfAllFunctions_(), std::floor(log2(problem_.getNumberOfElements())));
   
   auto t1 = std::chrono::high_resolution_clock::now();
   dp.run();

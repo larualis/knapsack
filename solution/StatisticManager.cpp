@@ -64,7 +64,7 @@ void StatisticManager::printStatistics(bool printValues)
   
   std::cout << "\n";
   
-  printDetailedPruning();
+  //printDetailedPruning();
 }
 
 void StatisticManager::printCompareToOtherSolutions(StatisticManager &otherManager, bool detailed)

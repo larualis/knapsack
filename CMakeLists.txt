@@ -31,5 +31,8 @@ add_executable(Knapsack
         DP/NormalDP.cpp
         DP/NormalDP.h
         DP/RestrictedDP.cpp
-        DP/RestrictedDP.h )
-        #pruning_rules/ApproxPruning.cpp pruning_rules/ApproxPruning.h DP/ApproxDP.cpp DP/ApproxDP.h )
+        DP/RestrictedDP.h
+        pruning_rules/ApproxPruning.cpp
+        pruning_rules/ApproxPruning.h
+        DP/ApproxDP.cpp
+        DP/ApproxDP.h )

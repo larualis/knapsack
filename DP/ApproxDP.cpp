@@ -150,8 +150,6 @@ void ApproxDP::errorRound(const Element& element,std::list<static_vector>& curre
   
   bool errorWasUsed = false;
   
-  int lastSolutionWeight = -1;
-  
   approxPruning_.setupForNextElement(&currentBestSolutions, numberOfCurrentElement_);
   
   while (idxOldSolution < previousSolutions.size() and
@@ -173,29 +171,21 @@ void ApproxDP::errorRound(const Element& element,std::list<static_vector>& curre
     
     while (idxOldSolution < previousSolutions.size() and solutionComparer::lex(previousSolutions[idxOldSolution], newSolution))
     {
-      handleNewSolutionWithError(previousSolutions[idxOldSolution], currentBestSolutions, errorWasUsed, lastSolutionWeight);
+      handleNewSolutionWithError(previousSolutions[idxOldSolution], errorWasUsed);
       
       ++idxOldSolution;
     }
-    
-    handleNewSolutionWithError(newSolution, currentBestSolutions, errorWasUsed, lastSolutionWeight);
+  
+    handleNewSolutionWithError(newSolution, errorWasUsed);
     
     ++idxNewSolution;
   }
   
   while(idxOldSolution < previousSolutions.size())
   {
-    handleNewSolutionWithError(previousSolutions[idxOldSolution], currentBestSolutions, errorWasUsed, lastSolutionWeight);
+    handleNewSolutionWithError(previousSolutions[idxOldSolution], errorWasUsed);
     
     ++idxOldSolution;
-  }
-  
-  for(auto &sol :currentBestSolutions)
-  {
-    if(sol.front() == lastSolutionWeight)
-    {
-      solutions_.push_back(sol);
-    }
   }
   
   if(!errorWasUsed)
@@ -204,7 +194,7 @@ void ApproxDP::errorRound(const Element& element,std::list<static_vector>& curre
   }
 }
 
-void ApproxDP::handleNewSolutionWithError(static_vector &solution, std::list<static_vector>& currentBestSolutions, bool& errorWasUsed, int& lastSolutionWeight)
+void ApproxDP::handleNewSolutionWithError(static_vector &solution, bool &errorWasUsed)
 {
   bool solutionIsGood = false;
   
@@ -229,17 +219,7 @@ void ApproxDP::handleNewSolutionWithError(static_vector &solution, std::list<sta
   
   if(solutionIsGood)
   {
-    if(lastSolutionWeight != solution.front())
-    {
-      for(auto &sol :currentBestSolutions)
-      {
-        if(sol.front() == lastSolutionWeight)
-        {
-          solutions_.push_back(sol);
-        }
-      }
-      lastSolutionWeight = solution.front();
-    }
+    solutions_.push_back(solution);
     
     if(errorWasUsed)
     {

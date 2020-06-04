@@ -52,7 +52,7 @@ public:
   
   void handleNewSolution(static_vector &solution);
   
-  void handleNewSolutionWithError(static_vector& solution, std::list<static_vector>& currentBestSolutions, bool& errorWasUsed, int& lastSolutionWeight);
+  void handleNewSolutionWithError(static_vector &solution, bool &errorWasUsed);
   
   std::vector<std::vector<int>> getNumberOfRemovedSolutionsPerRound();
   

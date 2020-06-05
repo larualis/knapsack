@@ -51,6 +51,7 @@ public:
   
   void makeApproxSolution();
   
+  void makeApproxRestrictedSolution();
 };
 
 #endif //KNAPSACK_SOLUTION_H

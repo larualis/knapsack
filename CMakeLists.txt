@@ -35,4 +35,6 @@ add_executable(Knapsack
         pruning_rules/ApproxPruning.cpp
         pruning_rules/ApproxPruning.h
         DP/ApproxDP.cpp
-        DP/ApproxDP.h )
+        DP/ApproxDP.h
+        DP/ApproxRestrictedDP.cpp
+        DP/ApproxRestrictedDP.h)

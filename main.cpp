@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
    * --Type= 0 normal 1 restricted 2 compare 3 verifyResults
    * --ResFunc= number of Functions which should be restricted format: 1,3,6
    **/
-  enum Type {normal, restricted, approx, compare, verifyResults};
+  enum Type {normal, restricted, approx, approxRestricted, compare, verifyResults};
   
   Type type = Type::normal;
   
@@ -280,8 +280,6 @@ int main(int argc, char *argv[])
       }
       case restricted:
       {
-        problem.reverseElements();
-        
         sol.makeRestrictedSolution();
   
         manager.addSolution(sol);
@@ -291,6 +289,13 @@ int main(int argc, char *argv[])
       {
         sol.makeApproxSolution();
   
+        manager.addSolution(sol);
+        break;
+      }
+      case approxRestricted:
+      {
+        sol.makeApproxRestrictedSolution();
+    
         manager.addSolution(sol);
         break;
       }

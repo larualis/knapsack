@@ -40,11 +40,6 @@ private:
   ApproxPruning approxPruning_;
   
   int frequency_;
-
-public:
-  ApproxDP(Problem& problem, std::vector<int> functionsToCompare, int frequency);
-  
-  void run();
   
   void errorRound(const Element& element,std::list<static_vector>& currentBestSolutions);
   
@@ -53,6 +48,11 @@ public:
   void handleNewSolution(static_vector &solution);
   
   void handleNewSolutionWithError(static_vector &solution, bool &errorWasUsed);
+
+public:
+  ApproxDP(Problem& problem, std::vector<int> functionsToCompare, int frequency);
+  
+  void run();
   
   std::vector<std::vector<int>> getNumberOfRemovedSolutionsPerRound();
   

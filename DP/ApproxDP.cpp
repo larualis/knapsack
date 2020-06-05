@@ -63,7 +63,7 @@ void ApproxDP::run()
         continue;
       }
       
-      int numberOfElementsToRemove = 0;
+      int numberOfSolutionsToRemove = 0;
       
       upperBoundPruning_.setupForNextElement(currentBestSolutions);
       
@@ -71,12 +71,12 @@ void ApproxDP::run()
       {
         if(upperBoundPruning_.shouldSolutionBeRemoved(sol))
         {
-          ++numberOfElementsToRemove;
+          ++numberOfSolutionsToRemove;
         }
         else break;
       }
       
-      solutions_.erase(solutions_.begin(), solutions_.begin() + numberOfElementsToRemove);
+      solutions_.erase(solutions_.begin(), solutions_.begin() + numberOfSolutionsToRemove);
     }
   }
 }

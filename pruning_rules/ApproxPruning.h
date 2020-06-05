@@ -49,12 +49,13 @@ inline bool ApproxPruning::dominatesWithError(static_vector &sol1, static_vector
   
   for (int i = 1; i <= numberOfFunctions; ++i)
   {
-    if(sol1[i] != 0 and sol2[i] != 0)
+    int valForSol1i = sol1[i] != 0 ? (int)(log2(sol1[i]) / errorCalculatedForDomination_) + 1 : 0;
+  
+    int valForSol12 = sol2[i] != 0 ? (int)(log2(sol2[i]) / errorCalculatedForDomination_) + 1 : 0;
+    
+    if( valForSol1i < valForSol12)
     {
-      if( (int)(log2(sol1[i]) / errorCalculatedForDomination_) + 1 < (int)(log2(sol2[i]) / errorCalculatedForDomination_) + 1)
-      {
-        return false;
-      }
+      return false;
     }
   }
   

@@ -74,7 +74,7 @@ void Solution::makeRestrictedSolution()
   
   for (int i = 0; i < minimalFunctionValues_.size(); ++i )
   {
-    minimalFunctionValues_[i] = std::floor(minimalFunctionValues_[i] - problem_.getSlack()[i]);
+    minimalFunctionValues_[i] = std::floor(minimalFunctionValues_[i] * problem_.getSlack()[i]);
   }
   
   //! rev DP
@@ -123,7 +123,7 @@ void Solution::makeApproxRestrictedSolution()
   
   for (int i = 0; i < minimalFunctionValues_.size(); ++i )
   {
-    minimalFunctionValues_[i] = std::floor(minimalFunctionValues_[i] - problem_.getSlack()[i]);
+    minimalFunctionValues_[i] = std::floor(minimalFunctionValues_[i] * problem_.getSlack()[i]);
   }
   
   //! rev DP

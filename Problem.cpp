@@ -8,32 +8,12 @@
 #include <utility>
 #include <sstream>
 
-Problem::Problem(std::string filename, float capacity,
-                 std::vector<int> restrictedFunctions, std::vector<float> slack):
-                 capacity_(capacity),
-                 restrictedFunctions_(std::move(restrictedFunctions)),
-                 slack_(std::move(slack))
-{
-  std::vector<std::vector<int>> rawElements;
-  
-  readData(filename, rawElements);
-  
-  sumOfWeights_ = 0;
-  
-  for (auto &ele: rawElements)
-  {
-    sumOfWeights_ += ele[0];
-  }
-  
-  numberOfFunctions_ = rawElements.front().size() - 1;
-  
-  eleManager_ = ElementManager(rawElements, rawElements.size(), numberOfFunctions_);
-}
 
 Problem::Problem(std::string filename,
-                 std::vector<int> restrictedFunctions, std::vector<float> slack):
+                 std::vector<int> restrictedFunctions, std::vector<float> slack, double error):
     restrictedFunctions_(std::move(restrictedFunctions)),
-    slack_(std::move(slack))
+    slack_(std::move(slack)),
+    error_(error)
 {
   std::vector<std::vector<int>> rawElements;
   
@@ -51,24 +31,6 @@ Problem::Problem(std::string filename,
   capacity_ = std::floor(sumOfWeights_ /2);
   
   eleManager_ = ElementManager(rawElements, rawElements.size(), numberOfFunctions_);
-  
-  slack_ = std::vector<float>(restrictedFunctions_.size(), 0);
-  
-  int k = 0;
-  for(auto i : restrictedFunctions_ )
-  {
-    for (auto& ele: eleManager_.getElements())
-    {
-      slack_[k] += ele.values_[i - 1];
-    }
-    ++k;
-  }
-  
-  for(auto &val : slack_)
-  {
-    //!this should be average value * 10% of number of Elements, should also include number of restricted functions
-    val = (val / (float) eleManager_.getNumberOfElements()) * (float) eleManager_.getNumberOfElements() * 0.6 * 0.05;
-  }
 }
 
 void Problem::readData(std::string& filename, std::vector<std::vector<int>>& rawElements)
@@ -188,4 +150,9 @@ std::vector<int> Problem::getVectorOfAllFunctions_()
   }
   
   return functionsToCompare;
+}
+
+double Problem::getError() const
+{
+  return error_;
 }

@@ -12,7 +12,7 @@
 class ApproxPruning : public Pruning
 {
 public:
-  ApproxPruning(int numberOfElements, int numberOfFunctions, int frequency);
+  ApproxPruning(int numberOfElements, int numberOfFunctions, int frequency, double error);
   
   bool shouldSolutionBeRemoved(static_vector& solution);
   

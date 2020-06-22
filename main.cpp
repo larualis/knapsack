@@ -197,6 +197,10 @@ int main(int argc, char *argv[])
   
   bool printSolutions = false;
   
+  std::vector<float> slack;
+  
+  float error = 0;
+  
   std::string pathToFiles(argv[1]);
   
   for(int i = 1; i < argc; ++i)
@@ -228,6 +232,16 @@ int main(int argc, char *argv[])
         printSolutions = true;
       }
     }
+  
+    if (input.find("--Slack=")!= std::string::npos)
+    {
+      slack.push_back(std::stof(input.substr(input.find('=') + 1)));
+    }
+  
+    if (input.find("--Error=")!= std::string::npos)
+    {
+      error = std::stof(input.substr(input.find('=') + 1));
+    }
   }
   
   StatisticManager manager(pathToFiles);
@@ -248,8 +262,6 @@ int main(int argc, char *argv[])
   {
     std::cout<<"solve Knapsack: "<<numberKnapsack<<"\r"<<"\n"<<std::flush;
     
-    std::vector<float> slack {0.8};
-    
     std::string filePath = pathToFiles + "/knapsack" + std::to_string(numberKnapsack) + ".txt";
     
     if(numberOfFunctionsInInput(filePath) > NUMBEROFFUNCTIONS)
@@ -263,7 +275,7 @@ int main(int argc, char *argv[])
       return 0;
     }
     
-    Problem problem(filePath, restrictedFunctions, slack);
+    Problem problem(filePath, restrictedFunctions, slack, error);
     
     problem.makeMaxOrder();
   

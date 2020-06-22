@@ -16,7 +16,7 @@ ApproxDP::ApproxDP(Problem &problem, std::vector<int> functionsToCompare, int fr
     remainingWeightPruning_(problem.getNumberOfElements(), problem.getSumOfWeights(), problem.getCapacity()),
     paretoPruner_(problem.getNumberOfElements(), functionsToCompare.size()),
     upperBoundPruning_(problem.getNumberOfElements(), functionsToCompare, problem.getCapacity(), problem.getEleManager()),
-    approxPruning_(problem.getNumberOfElements(), functionsToCompare.size(), frequency),
+    approxPruning_(problem.getNumberOfElements(), functionsToCompare.size(), frequency, problem.getError()),
     frequency_(frequency)
 {
   solutions_.emplace_back(static_vector(numberOfFunctions_ + 1,0));

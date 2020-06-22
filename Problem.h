@@ -25,6 +25,8 @@ private:
   
   std::vector<float> slack_;
   
+  double error_;
+
   ElementManager eleManager_;
 public:
   ElementManager &getEleManager();
@@ -42,15 +44,15 @@ public:
   int getNumberOfElements();
   
   std::vector<int> getVectorOfAllFunctions_();
+  
+  double getError() const;
 
 private:
   
   void readData(std::string& filename, std::vector<std::vector<int>>& rawElements);
   
 public:
-  Problem(std::string filename, float capacity, std::vector<int> restrictedFunctions, std::vector<float> slack);
-  
-  Problem(std::string filename, std::vector<int> restrictedFunctions, std::vector<float> slack);
+  Problem(std::string filename, std::vector<int> restrictedFunctions, std::vector<float> slack , double error);
   
   void reverseElements();
   

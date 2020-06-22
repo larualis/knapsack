@@ -6,11 +6,12 @@
 
 #include "../SolutionComparer.h"
 
-ApproxPruning::ApproxPruning(int numberOfElements, int numberOfFunctions, int frequency):
+ApproxPruning::ApproxPruning(int numberOfElements, int numberOfFunctions, int frequency, double error):
     Pruning(numberOfElements),
     currentBestSolutions_(nullptr),
     frequency_(frequency),
-    numberOfElements_(numberOfElements)
+    numberOfElements_(numberOfElements),
+    error_(error)
 {
   numberOfRoundsWhereErrorWillBeUsed_ = std::floor(numberOfElements/frequency);
   

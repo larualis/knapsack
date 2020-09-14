@@ -3,7 +3,7 @@
 //
 
 #include "ApproxPruning.h"
-
+#include <algorithm>
 #include "../SolutionComparer.h"
 
 ApproxPruning::ApproxPruning(int numberOfElements, int numberOfFunctions, int frequency, double error):
@@ -13,6 +13,33 @@ ApproxPruning::ApproxPruning(int numberOfElements, int numberOfFunctions, int fr
     numberOfElements_(numberOfElements),
     error_(error)
 {
+  for(int i = 1; i <= numberOfFunctions; ++i)
+  {
+    functionsWhereErrorIsUsed_.push_back(i);
+  }
+  numberOfRoundsWhereErrorWillBeUsed_ = std::floor(numberOfElements/frequency);
+  
+  sumOfErrorsNotUsed_ = 0;
+}
+
+ApproxPruning::ApproxPruning(int numberOfElements, std::vector<int> functionsWhereErrorNotIsUsed, int numberOfFunctions, int frequency, double error):
+    Pruning(numberOfElements),
+    currentBestSolutions_(nullptr),
+    frequency_(frequency),
+    numberOfElements_(numberOfElements),
+    functionsWhereErrorIsNotUsed_(functionsWhereErrorNotIsUsed),
+    error_(error)
+{
+  for(int i = 1; i <= numberOfFunctions; ++i)
+  {
+    functionsWhereErrorIsUsed_.push_back(i);
+  }
+  
+  for(auto i : functionsWhereErrorIsNotUsed_)
+  {
+    functionsWhereErrorIsUsed_.erase(std::remove(functionsWhereErrorIsUsed_.begin(), functionsWhereErrorIsUsed_.end(), i), functionsWhereErrorIsUsed_.end());
+  }
+  
   numberOfRoundsWhereErrorWillBeUsed_ = std::floor(numberOfElements/frequency);
   
   sumOfErrorsNotUsed_ = 0;

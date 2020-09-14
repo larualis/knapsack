@@ -14,6 +14,8 @@ class ApproxPruning : public Pruning
 public:
   ApproxPruning(int numberOfElements, int numberOfFunctions, int frequency, double error);
   
+  ApproxPruning(int numberOfElements, std::vector<int> functionsWhereErrorNotIsUsed,  int numberOfFunctions, int frequency, double error);
+  
   bool shouldSolutionBeRemoved(static_vector& solution);
   
   void updateListOfBestSolutions(static_vector& solution);
@@ -40,20 +42,30 @@ private:
   
   double errorCalculatedForDomination_;
   
+  std::vector<int> functionsWhereErrorIsUsed_;
+  
+  std::vector<int> functionsWhereErrorIsNotUsed_;
+  
   bool dominatesWithError(static_vector &sol1, static_vector &sol2);
 };
 
 inline bool ApproxPruning::dominatesWithError(static_vector &sol1, static_vector &sol2)
 {
-  int numberOfFunctions = sol1.size() - 1;
-  
-  for (int i = 1; i <= numberOfFunctions; ++i)
+  for(auto i: functionsWhereErrorIsUsed_)
   {
     int valForSol1i = sol1[i] != 0 ? (int)(log2(sol1[i]) / errorCalculatedForDomination_) + 1 : 0;
-  
+    
     int valForSol12 = sol2[i] != 0 ? (int)(log2(sol2[i]) / errorCalculatedForDomination_) + 1 : 0;
     
     if( valForSol1i < valForSol12)
+    {
+      return false;
+    }
+  }
+  
+  for(auto i : functionsWhereErrorIsNotUsed_)
+  {
+    if(sol1[i] < sol2[i])
     {
       return false;
     }

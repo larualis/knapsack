@@ -252,7 +252,9 @@ int main(int argc, char *argv[])
   
   for (const auto & entry : std::filesystem::directory_iterator(pathToFiles))
   {
-    if(entry.path().string().find("knapsack") != std::string::npos)
+    int posOfFileName = entry.path().string().rfind("/") + 1;
+    
+    if(entry.path().string().substr(posOfFileName).find("knapsack") != std::string::npos)
     {
       ++numberOfKnapsacksToSolve;
     }
@@ -322,8 +324,6 @@ int main(int argc, char *argv[])
           secondManager.addSolution(normalSol);
         }
         
-        problem.reverseElements();
-        
         sol.makeRestrictedSolution();
   
         manager.addSolution(sol);
@@ -339,6 +339,8 @@ int main(int argc, char *argv[])
         return 0;
     }
   }
+  
+  std::cout<<std::endl<<"Results:"<<std::endl;
   
   if(type != Type::compare)
   {

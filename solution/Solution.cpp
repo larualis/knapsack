@@ -10,6 +10,7 @@
 #include "../DP/RestrictedDP.h"
 #include "../DP/ApproxDP.h"
 #include "../DP/ApproxRestrictedDP.h"
+#include "../DP/revDPSimple.h"
 
 Solution::Solution(Problem &problem):
     problem_(problem),
@@ -78,7 +79,7 @@ void Solution::makeRestrictedSolution()
   }
   
   //! rev DP
-  revDP rDP(problem_, minimalFunctionValues_);
+  revDPSimple rDP(problem_, minimalFunctionValues_);
   
   rDP.run();
   
@@ -127,7 +128,7 @@ void Solution::makeApproxRestrictedSolution()
   }
   
   //! rev DP
-  revDP rDP(problem_, minimalFunctionValues_);
+  revDPSimple rDP(problem_, minimalFunctionValues_);
   
   rDP.run();
   

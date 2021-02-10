@@ -37,4 +37,6 @@ add_executable(Knapsack
         DP/ApproxDP.cpp
         DP/ApproxDP.h
         DP/ApproxRestrictedDP.cpp
-        DP/ApproxRestrictedDP.h)
+        DP/ApproxRestrictedDP.h
+        DP/revDPSimple.cpp
+        DP/revDPSimple.h)

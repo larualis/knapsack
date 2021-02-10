@@ -63,7 +63,7 @@ public:
   
   revDP(Problem& problem, std::vector<int> baseValues);
   
-  [[noreturn]] void run();
+  void run();
   
 private:
   

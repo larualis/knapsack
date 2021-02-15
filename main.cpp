@@ -4,158 +4,6 @@
 #include "Problem.h"
 #include "solution/StatisticManager.h"
 
-template <class x>
-void printVector(std::vector<x> vec)
-{
-  for (auto ele : vec)
-  {
-    std::cout << ele << " ";
-  }
-  std::cout << std::endl;
-}
-
-void checkCorrectness(Problem &problem)
-{
-  /**
-  //! restricted DP and data extraction
-  problem.reverseElements();
-  
-  std::vector<float> minimalFunctionValues(problem.getRestrictedFunctions().size(), 0);
-  
-  for (int i = 0; i < problem.getRestrictedFunctions().size(); ++i)
-  {
-    DP restrictedDP(problem, std::vector<int> {problem.getRestrictedFunctions()[i]});
-    
-    restrictedDP.run();
-    
-    auto solutions = restrictedDP.getSolutions();
-    
-    for (auto sol: solutions)
-    {
-      if(minimalFunctionValues[i] < sol[1])
-      {
-        minimalFunctionValues[i] = sol[1];
-      }
-    }
-  }
-  
-  for (int i = 0; i < minimalFunctionValues.size(); ++i )
-  {
-    minimalFunctionValues[i] = std::floor(minimalFunctionValues[i] - problem.getSlack()[i]);
-  }
-  std::cout<<"vector for calc"<<std::endl;
-  
-  printVector<float>(minimalFunctionValues);
-  
-  //! rev DP
-  revDP rDP(problem, minimalFunctionValues);
-  
-  auto pruningValues = rDP.run();
-  
-  //! final DP
-  DP finalDP(problem, pruningValues);
-  
-  finalDP.run();
-  
-  auto finaleSolutionRev = finalDP.getSolutions();
-  
-  //!begin normal
-  problem.reverseElements();
-  
-  std::vector<int> functionsToCompare(problem.getNumberOfFunctions(), 0);
-  
-  for (int i = 0; i < problem.getNumberOfFunctions(); ++i)
-  {
-    functionsToCompare[i] = i + 1;
-  }
-  
-  DP dp(problem, functionsToCompare);
-  
-  dp.run();
-  
-  std::vector< std::vector<float> > finaleSolution = dp.getSolutions();
-  
-  //!remove solutions that don't fit criteria
-  auto sol = finaleSolution.begin();
-  
-  while(sol != finaleSolution.end())
-  {
-    bool dom = false;
-    for (int i = 0; i < problem.getRestrictedFunctions().size(); ++i)
-    {
-      if(sol->at(problem.getRestrictedFunctions()[i]) < minimalFunctionValues[i] )
-      {
-        dom = true;
-        break;
-      }
-    }
-    
-    if(dom)
-    {
-      sol = finaleSolution.erase(sol);
-    }
-    else
-    {
-      ++sol;
-    }
-  }
-  
-  //!check if equal
-  bool error = false;
-  
-  if(finaleSolution.size() != finaleSolutionRev.size())
-  {
-    std::cout<<"size doesn't match"<<std::endl;
-    
-    std::cout<<"solutions"<<std::endl;
-    
-    for(auto &x: finaleSolution)
-    {
-      printVector<float>(x);
-    }
-  
-    std::cout<<"solutions calc:"<<std::endl;
-  
-    for(auto &x: finaleSolutionRev)
-    {
-      printVector<float>(x);
-    }
-  }
-  else
-  {
-    auto iterator1 = finaleSolution.begin();
-    
-    auto iterator2 = finaleSolutionRev.begin();
-    
-    while(iterator1 != finaleSolution.end())
-    {
-      for (int i = 0; i < iterator1->size(); ++i)
-      {
-        if(iterator1->at(i) != iterator2->at(i))
-        {
-          std::cout<<"entrys don't mach"<<std::endl;
-          error = true;
-          break;
-        }
-      }
-      
-      ++iterator1;
-      ++iterator2;
-    }
-  
-    if(error)
-    {
-      printVector<float>(*iterator1);
-      printVector<float>(*iterator2);
-    }
-    else
-    {
-      std::cout<<"Solutions match"<<std::endl;
-    }
-  }
-   **/
-}
-
 int numberOfFunctionsInInput(std::string& filePath)
 {
   std::ifstream file;
@@ -184,10 +32,13 @@ int numberOfFunctionsInInput(std::string& filePath)
 int main(int argc, char *argv[])
 {
   /**
-   * input of type: ../directory to files --Type= --ResFunc=
-   * /directory to files contains all knapsack problem which should be solved, they should be similar
-   * --Type= 0 normal 1 restricted 2 compare 3 verifyResults
-   * --ResFunc= number of Functions which should be restricted format: 1,3,6
+   * input of type: ../directory_to_files --Type= --ResFunc= --Slack= --Error= --PrintSolution=
+   * /directory_to_files contains all knapsack problems which should be solved, they should be similar
+   * --Type= 0 normal 1 restricted 2 approx 3 approx & restricted 4 compare normal restricted
+   * --ResFunc= number of functions which should be restricted, format: 1,3,6
+   * --Slack= percentage of best single value, used for all ResFunc
+   * --Error= needed for 1+Error approximation
+   * --PrintSolution= prints the values of all knapsack solutions
    **/
   enum Type {normal, restricted, approx, approxRestricted, compare, verifyResults};
   
@@ -327,11 +178,6 @@ int main(int argc, char *argv[])
         sol.makeRestrictedSolution();
   
         manager.addSolution(sol);
-        break;
-      }
-      case verifyResults:
-      {
-        checkCorrectness(problem);
         break;
       }
       default:

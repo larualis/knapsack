@@ -13,7 +13,7 @@
 class StatisticManager
 {
 private:
-  std::vector<int> runtime_;
+  std::vector<double> runtime_;
   
   std::vector<int> solutionSize_;
   
@@ -39,7 +39,7 @@ public:
   
   const std::vector<int> &getSolutionSize() const;
   
-  const std::vector<int> &getRuntime() const;
+  const std::vector<double> &getRuntime() const;
   
   void printCompareToOtherSolutions(StatisticManager& otherManager, bool detailed);
   

@@ -28,7 +28,7 @@ void Solution::makeNormalSolution()
   
   solutions_ = dp.getSolutions();
   
-  runtime_ = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+  runtime_ = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
   
   numberOfRemovedSolutionsPerRound_ = dp.getNumberOfRemovedSolutionsPerRound();
 }
@@ -44,7 +44,7 @@ void Solution::makeApproxSolution()
   
   solutions_ = dp.getSolutions();
   
-  runtime_ = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+  runtime_ = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
   
   numberOfRemovedSolutionsPerRound_ = dp.getNumberOfRemovedSolutionsPerRound();
 }
@@ -90,7 +90,7 @@ void Solution::makeRestrictedSolution()
   
   auto t2 = std::chrono::high_resolution_clock::now();
   
-  runtime_ = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+  runtime_ = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
   
   solutions_ = finalDP.getSolutions();
   
@@ -139,7 +139,7 @@ void Solution::makeApproxRestrictedSolution()
   
   auto t2 = std::chrono::high_resolution_clock::now();
   
-  runtime_ = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+  runtime_ = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
   
   solutions_ = finalDP.getSolutions();
   

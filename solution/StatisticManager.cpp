@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <numeric>
+#include <cmath>
 #include <sstream>
 #include "StatisticManager.h"
 
@@ -54,9 +55,9 @@ void StatisticManager::printStatistics(bool printValues)
   
   std::cout << "solved number of knapsack problems: " << countKnapsack_<<"\n";
   
-  std::cout << "average time: " << std::accumulate(runtime_.begin(), runtime_.end(), 0.0)/countKnapsack_<<"\n";
+  std::cout << "average time: " << round(std::accumulate(runtime_.begin(), runtime_.end(), 0.0)/countKnapsack_ /100.0)/10.0 <<"\n";
   
-  std::cout << "time range from " << *std::min_element(runtime_.begin(), runtime_.end()) << " to " << *std::max_element(runtime_.begin(), runtime_.end())<<"\n";
+  std::cout << "time range from " << round(*std::min_element(runtime_.begin(), runtime_.end())/100.0)/10.0 << " to " << round(*std::max_element(runtime_.begin(), runtime_.end())/100.0)/10.0<<"\n";
   
   std::cout << "average number of solution: " << std::accumulate(solutionSize_.begin(), solutionSize_.end(), 0.0)/countKnapsack_<<"\n";
   
@@ -69,15 +70,15 @@ void StatisticManager::printStatistics(bool printValues)
 
 void StatisticManager::printCompareToOtherSolutions(StatisticManager &otherManager, bool detailed)
 {
-  std::vector<float> comparisonRuntime;
+  std::vector<double> comparisonRuntime;
   
-  std::vector<float> comparisonSolutionSize;
+  std::vector<double> comparisonSolutionSize;
   
   for (int i = 0; i < countKnapsack_; ++i)
   {
-    comparisonSolutionSize.push_back((float) solutionSize_[i] / otherManager.getSolutionSize()[i]);
+    comparisonSolutionSize.push_back((double) solutionSize_[i] / otherManager.getSolutionSize()[i]);
   
-    comparisonRuntime.push_back((float) otherManager.getRuntime()[i] / runtime_[i]);
+    comparisonRuntime.push_back((double) otherManager.getRuntime()[i] / runtime_[i]);
   }
   
   if(detailed)
@@ -150,7 +151,7 @@ void StatisticManager::readFromFile(std::string pathToFile)
     startReading = line.find("values") != std::string::npos;
   }
   
-  int val;
+  double val;
   
   while(std::getline(file, line))
   {
@@ -169,7 +170,7 @@ void StatisticManager::readFromFile(std::string pathToFile)
   file.close();
 }
 
-const std::vector<int> &StatisticManager::getRuntime() const
+const std::vector<double> &StatisticManager::getRuntime() const
 {
   return runtime_;
 }

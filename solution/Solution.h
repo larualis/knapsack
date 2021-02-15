@@ -15,7 +15,7 @@ private:
   
   Problem& problem_;
   
-  int runtime_;
+  double runtime_;
   
   std::vector<std::vector<int>> numberOfRemovedSolutionsPerRound_;
   
@@ -25,7 +25,7 @@ public:
   
   Solution(Problem &problem);
   
-  int getRuntime() const
+  double getRuntime() const
   {
     return runtime_;
   }
